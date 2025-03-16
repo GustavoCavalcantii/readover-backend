@@ -1,17 +1,27 @@
 {
+  "name": "readover",
+  "description": "",
+  "version": "0.0.0",
   "scripts": {
     "dev": "tsx watch src/http/server.ts"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "figlet": "^1.8.0",
+    "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.12.1",
+    "morgan": "^1.10.0",
     "winston": "^3.17.0"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/figlet": "^1.7.0",
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/morgan": "^1.9.9",
     "@types/winston": "^2.4.4",
     "tsx": "^4.19.3",
     "typescript": "^5.8.2"
