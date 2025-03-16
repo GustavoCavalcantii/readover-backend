@@ -20,7 +20,7 @@
 
 ## BRANCH PATTERN
 
-**-- EXEMPLO**: "nova-pagina-login"
+**-- EXEMPLO**: "feat/nova-pagina-login"
 
 - Para trabalhar em algo novo, crie uma ramificação master dê um nome descritivo
 - Faça commit dessa ramificação localmente e envie regularmente seu trabalho para a mesma ramificação nomeada no servidor
