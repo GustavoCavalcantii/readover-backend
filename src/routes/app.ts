@@ -19,5 +19,4 @@ app.use(morgan("dev"));
 */
 app.use(userRouter);
 
-
 export default app;

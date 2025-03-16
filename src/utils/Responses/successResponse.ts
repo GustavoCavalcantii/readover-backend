@@ -2,9 +2,9 @@ import { ApiResponse } from "./response";
 
 export const successResponse = <T>(
   data?: T | null,
-  message: string = "Requisição bem-sucedida"
+  message: string = "Requisição bem-sucedida",
+  statusCode: number = 200
 ): ApiResponse<T> => {
-  let statusCode: number = 200;
 
   if (data === undefined) {
     statusCode = 204;
