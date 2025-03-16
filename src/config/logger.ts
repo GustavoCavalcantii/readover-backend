@@ -12,9 +12,9 @@ const logPath = path.join(logsDirectory, "app.log");
 const addEmote = (level: string): string => {
   switch (level) {
     case "info":
-      return "❕";
+      return "ℹ️ ";
     case "warn":
-      return "⚠️";
+      return "⚠️ ";
     case "error":
       return "❌";
     case "debug":
@@ -40,14 +40,8 @@ const logger = winston.createLogger({
         winston.format.timestamp(),
         winston.format.printf(({ timestamp, level, message }) => {
           const emote = addEmote(level);
-          let space = "";
-          if (level === "warn") {
-            space = "  "; 
-          } else {
-            space = " "; 
-          }
           const coloredLevel = winston.format.colorize().colorize(level, level);
-          return `${timestamp} ${emote}${space}${coloredLevel} : ${message}`;
+          return `${timestamp} ${emote} ${coloredLevel} : ${message}`;
         })
       ),
     }),
