@@ -2,19 +2,22 @@ import { IUser } from "../interface/IUser";
 import User from "../models/User";
 import { MongoServerError } from "mongodb";
 
-
 import jwt from "jsonwebtoken";
 
 export class UserService {
   async createUser(
     username: string,
     email: string,
-    password: string
+    password: string,
+    accessLevel: number = 0,
+    grade?: string
   ): Promise<IUser> {
     const user = new User({
       username,
       email,
       password,
+      accessLevel,
+      grade
     });
 
     try {
