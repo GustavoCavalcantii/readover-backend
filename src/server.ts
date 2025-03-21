@@ -1,10 +1,10 @@
-import logger from "../config/logger";
-import { ApiEnviroment } from "../enum/Api/ApiEnviroment";
-import app from "../routes/app";
-import { generateASCII } from "../utils/nameGenerator";
-import { connectDB, disconnectDB } from "../database/connection";
+import logger from "./config/Logger";
+import { ApiEnviroment } from "./enums/Api/ApiEnviroment";
+import app from "./routes/App";
+import { generateASCII } from "./utils/NameGenerator";
+import { connectDB, disconnectDB } from "./database/Connection";
 import { config } from "dotenv";
-import packageJson from "../../package.json";
+import packageJson from "../package.json";
 
 config();
 

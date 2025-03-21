@@ -1,6 +1,6 @@
-import { ApiResponse } from "./response";
+import { ApiResponse } from "./ApiResponse";
 
-export const maintenanceResponse = (): ApiResponse<null> => {
+export const MaintenanceResponse = (): ApiResponse<null> => {
   return {
     success: false,
     message:

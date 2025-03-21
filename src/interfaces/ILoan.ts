@@ -1,5 +1,5 @@
 import { Document, ObjectId } from "mongoose";
-import { BookStatus } from "../enum/Book/bookStatus";
+import { BookStatus } from "../enums/Book/BookStatus";
 
 export interface ILoan extends Document {
   _id: ObjectId;

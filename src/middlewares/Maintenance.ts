@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { maintenanceResponse } from "../utils/Responses";
+import { MaintenanceResponse } from "../types/Responses/MaintenanceResponse";
 
 export default function maintenanceMiddleware(
   req: Request,
@@ -9,7 +9,7 @@ export default function maintenanceMiddleware(
   const isMaintenance = process.env.MAINTENANCE === "true";
 
   if (isMaintenance) {
-    res.status(503).json(maintenanceResponse());
+    res.status(503).json(MaintenanceResponse());
     return; 
   }
 

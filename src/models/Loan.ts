@@ -1,6 +1,6 @@
 import mongoose, { Schema, Types } from "mongoose";
-import { ILoan } from "../interface/ILoan";
-import { BookStatus } from "../enum/Book/bookStatus";
+import { ILoan } from "../interfaces/ILoan";
+import { BookStatus } from "../enums/Book/BookStatus";
 
 
 const loanSchema = new Schema<ILoan>({

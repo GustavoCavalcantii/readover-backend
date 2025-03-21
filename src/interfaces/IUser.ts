@@ -11,4 +11,6 @@ export interface IUser extends Document {
   grade?: string;
   passwordResetToken?: string;
   emprestimosAtivos: ObjectId[];
+
+  
 }

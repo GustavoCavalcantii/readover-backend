@@ -1,4 +1,4 @@
-import { IBook } from "../interface/IBook";
+import { IBook } from "../interfaces/IBook";
 import Book from "../models/Book";
 import { MongoServerError } from "mongodb";
 

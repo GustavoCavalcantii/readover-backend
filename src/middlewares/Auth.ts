@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { errorResponse } from "../utils/Responses";
+import { errorResponse } from "../types/Responses/Index";
 
 const SECRET_KEY = process.env.JWT_SECRET as string;
 

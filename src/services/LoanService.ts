@@ -1,7 +1,7 @@
 import { Types } from "mongoose";
-import { ILoan } from "../interface/ILoan";
+import { ILoan } from "../interfaces/ILoan";
 import Loan from "../models/Loan";
-import { BookStatus } from "../enum/Book/bookStatus";
+import { BookStatus } from "../enums/Book/BookStatus";
 
 export class LoanService {
   async createLoan(

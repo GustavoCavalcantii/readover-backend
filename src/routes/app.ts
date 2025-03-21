@@ -1,8 +1,9 @@
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
-import maintenanceMiddleware from "../middleware/maintenance";
-import userRouter from "./user";
+import maintenanceMiddleware from "../middlewares/Maintenance";
+
+import UserRouter from "../routes/User";
 
 const app = express();
 
@@ -17,6 +18,6 @@ app.use(morgan("dev"));
 /*
   ROTAS
 */
-app.use(userRouter);
+app.use(UserRouter);
 
 export default app;

@@ -1,109 +1,119 @@
 import { Request, Response } from "express";
+import { SuccessResponse } from "../types/Responses/SuccessResponse";
+import { ErrorResponse } from "../types/Responses/ErrorResponse";
+import { userService } from "../services/UserService";
+import { UserDTO } from "../dtos/UserDTO";
+import logger from "../config/Logger";
+import { IErrorDetail } from "../interfaces/IErrorDetail";
+import { plainToClass } from "class-transformer";
+import User from "../models/User";
 import bcrypt from "bcryptjs";
 
-import { errorResponse, successResponse } from "../utils/Responses";
-import { LoginResponse } from "../utils/Responses/userResponse";
+export default class UserController {
 
-import { UserService } from "../service/userService";
-import logger from "../config/logger";
-import User from "../models/User";
-import { validateEmail } from "../utils/validEmail";
-
-const userService = new UserService();
-
-class UserController {
   static async login(req: Request, res: Response) {
-    const { password, email } = req.body;
-    const isValid = validateEmail(email);
+    const userDto = plainToClass(UserDTO, req.body);
 
-    if (!isValid) {
-      res.status(400).json(errorResponse("Credenciais inválidas", 400));
-      return;
-    }
+    const user = await User.findOne({ email: userDto.email });
 
-    const user = await User.findOne({ email });
+    const invalidCredential: IErrorDetail[] = [
+      {
+        field: "email",
+        message:
+          "O email fornecido não corresponde a nenhum usuário registrado.",
+      },
+      {
+        field: "password",
+        message: "A senha fornecida está incorreta.",
+      },
+    ];
+
 
     if (!user) {
-      res.status(400).json(errorResponse("Credenciais inválidas", 400));
+      res
+        .status(401)
+        .json(ErrorResponse("Usuário não encontrado", 401, invalidCredential));
+
       return;
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await bcrypt.compare(
+      userDto.password,
+      user.password
+    );
 
     if (!isPasswordValid) {
-      res.status(400).json(errorResponse("Credenciais inválidas", 400));
+      res
+        .status(401)
+        .json(ErrorResponse("Usuário não encontrado", 401, invalidCredential));
+
       return;
     }
 
-    const token = userService.generateAuthToken(user);
-
-    const response: LoginResponse = {
+    const response = {
       username: user.username,
       email: user.email,
-      token: token,
+      token: userService.generateAuthToken(user),
     };
 
     res
       .status(200)
-      .json(successResponse(response, "Usuário logado com sucesso!"));
+      .json(SuccessResponse(response, "Usuário logado com sucesso", 200));
   }
 
   static async register(req: Request, res: Response) {
-    const { username, email, password } = req.body;
-
-    if (!username || !email || !password) {
-      res
-        .status(400)
-        .json(errorResponse("Nome, e-mail e senha são obrigatórios!", 400));
-
-      return;
-    }
-
-    const isValid = validateEmail(email);
-
-    if (!isValid) {
-      res.status(400).json(errorResponse("E-mail inválido", 400));
-      return;
-    }
+    const createUserDto = plainToClass(UserDTO, req.body);
 
     try {
-      const newUser = await userService.createUser(username, email, password);
+      const user = await userService.createUser(createUserDto);
 
-      const token = userService.generateAuthToken(newUser);
-
-      const response: LoginResponse = {
-        username: newUser.username,
-        email: newUser.email,
-        token: token,
+      const response = {
+        username: user.username,
+        email: user.email,
+        token: userService.generateAuthToken(user),
       };
-      
-      logger.info(`Usuário ${newUser.username} criado`);
+
       res
         .status(201)
-        .json(successResponse(response, "Usuário criado com sucesso!", 201));
-    } catch (error) {
-      logger.error("Erro ao criar o usuário:", error);
+        .json(SuccessResponse(response, "Usuário criado com sucesso!", 201));
 
-      if (
-        error instanceof Error &&
-        error.message === "Este email já está em uso. Tente outro."
-      ) {
+      logger.info(`Usuário ${user.username} criado`);
+    } catch (error) {
+      logger.error("Erro ao registrar usuário", error);
+
+      if (!(error instanceof Error)) {
+        res
+          .status(500)
+          .json(
+            ErrorResponse("Erro desconhecido. Tente novamente mais tarde.", 500)
+          );
+      }
+
+      let obError = error as Error;
+
+      if (obError.message === "Este email já está em uso. Tente outro.") {
+        const details: IErrorDetail[] = [
+          {
+            field: "email",
+            message: "Este e-mail já está em uso. Tente outro.",
+          },
+        ];
+
         res
           .status(400)
-          .json(errorResponse("Este email já está em uso. Tente outro.", 400));
+          .json(ErrorResponse("Credenciais inválidas", 400, details));
+
         return;
       }
 
       res
         .status(500)
         .json(
-          errorResponse(
-            "Erro ao criar o usuário. Tente novamente mais tarde.",
-            400
+          ErrorResponse(
+            "Erro interno do servidor. Tente novamente mais tarde.",
+            500
           )
         );
     }
   }
 }
-
-export default UserController;

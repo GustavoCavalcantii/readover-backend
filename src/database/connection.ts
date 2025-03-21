@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 import { config } from "dotenv";
-import logger from "../config/logger";
+import Logger from "../config/logger";
 config();
 
 const MONGO_URI = process.env.MONGO_URI as string;
@@ -21,19 +21,19 @@ export const connectDB = async () => {
 
         //monitorando a conexão
         mongoose.connection.on("connected", () =>
-          logger.info("Mongoose conectado!")
+          Logger.info("Mongoose conectado!")
         );
         mongoose.connection.on("error", (err) =>
-          logger.error("Erro no Mongoose: ", err)
+          Logger.error("Erro no Mongoose: ", err)
         );
         mongoose.connection.on("disconnected", () =>
-          logger.warn("Mongoose desconectado!")
+          Logger.warn("Mongoose desconectado!")
         );
 
         //tenta reconectar caso a conexão seja perdida
         process.on("SIGINT", async () => {
             await mongoose.connection.close();
-            logger.warn("Conexão com MongoDB fechada! Saindo");
+            Logger.warn("Conexão com MongoDB fechada! Saindo");
         });
     }
     catch(error){
@@ -44,9 +44,9 @@ export const connectDB = async () => {
 export const disconnectDB = async () => {
     try{
         await mongoose.disconnect();
-        logger.warn("Conexão com MongoDB fechada! Saindo");
+        Logger.warn("Conexão com MongoDB fechada! Saindo");
     }
     catch(error){
-        logger.error("Erro ao fechar a conexão com o banco de dados:", error)
+        Logger.error("Erro ao fechar a conexão com o banco de dados:", error)
     }
 }

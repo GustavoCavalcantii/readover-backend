@@ -1,4 +1,4 @@
-import { ApiEnviroment } from "../../enum/Api/ApiEnviroment";
+import { ApiEnviroment } from "../../enums/Api/ApiEnviroment";
 
 export interface ApiStatusResponse {
   appName: string;

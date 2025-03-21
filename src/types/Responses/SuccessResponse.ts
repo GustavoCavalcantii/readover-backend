@@ -1,6 +1,6 @@
-import { ApiResponse } from "./response";
+import { ApiResponse } from "./ApiResponse";
 
-export const successResponse = <T>(
+export const SuccessResponse = <T>(
   data?: T | null,
   message: string = "Requisição bem-sucedida",
   statusCode: number = 200
