@@ -2,8 +2,8 @@ import { Request, Response } from "express";
 import { ApiEnviroment } from "../enums/Api/ApiEnviroment";
 import { config } from "dotenv";
 import packageJson from "../../package.json";
-import { ApiStatusResponse } from "../types/Responses/ApiStatusResponse";
-import { SuccessResponse } from "../types/Responses/SuccessResponse";
+import { ApiStatusResponse } from "../@types/Responses/ApiStatusResponse";
+import { SuccessResponse } from "../@types/Responses/SuccessResponse";
 
 const API_NAME: string = packageJson.name;
 const API_VERSION: string = "v" + (process.env.API_VERSION || "1");

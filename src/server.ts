@@ -1,6 +1,6 @@
 import logger from "./config/Logger";
 import { ApiEnviroment } from "./enums/Api/ApiEnviroment";
-import app from "./routes/App";
+import app from "./routes";
 import { generateASCII } from "./utils/NameGenerator";
 import { connectDB, disconnectDB } from "./database/Connection";
 import { config } from "dotenv";

@@ -5,15 +5,16 @@ export const SuccessResponse = <T>(
   message: string = "Requisição bem-sucedida",
   statusCode: number = 200
 ): ApiResponse<T> => {
-
-  if (data === undefined) {
-    statusCode = 204;
-  }
-
-  return {
+  
+  let response: any = {
     success: true,
     message,
-    data,
     statusCode,
   };
+
+  if (data !== null && data !== undefined) {
+    response.data = data;
+  }
+
+  return response;
 };

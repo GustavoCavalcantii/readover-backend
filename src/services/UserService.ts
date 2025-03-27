@@ -1,11 +1,11 @@
 import { IUser } from "../interfaces/IUser";
 import User from "../models/User";
-import { MongoServerError } from "mongodb";
-import jwt from "jsonwebtoken";
+import { MongoServerError, ObjectId } from "mongodb";
 
 import dotenv from "dotenv";
 import Logger from "../config/Logger";
 import { UserDTO } from "../dtos/UserDTO";
+import bcrypt from "bcryptjs";
 
 dotenv.config();
 
@@ -14,7 +14,7 @@ class UserService {
     const user = new User({
       username: createUser.username,
       email: createUser.email,
-      password: createUser.password,
+      password: await bcrypt.hash(createUser.password, 10),
       accessLevel: 0,
       grade: createUser.grade,
     });
@@ -32,6 +32,51 @@ class UserService {
     }
   }
 
+  async updateUser(id: string, userData: UserDTO): Promise<IUser | null> {
+    try {
+      const existingUser = await User.findById(id).exec();
+
+      if (!existingUser) throw new Error("Usuário não encontrado");
+
+      if (userData.email) {
+        if (userData.email !== existingUser.email) {
+          const emailExists = await User.findOne({
+            email: userData.email,
+          }).exec();
+
+          if (emailExists)
+            throw new Error("Este e-mail já está em uso. Tente outro.");
+        }
+
+        //TODO: ENVIAR EMAIL PARA TROCAR O EMAIL
+      }
+
+      if (userData.password) {
+        //TODO: ENVIAR EMAIL PARA TROCAR A SENHA
+      }
+
+      const filteredUserData = Object.fromEntries(
+        Object.entries(userData).filter(([_, value]) => value !== undefined)
+      ) as Partial<UserDTO>;
+
+      const isDataEqual = (
+        Object.keys(filteredUserData) as (keyof UserDTO)[]
+      ).every((key) => filteredUserData[key] === existingUser[key]);
+
+      if (isDataEqual)
+        throw new Error("Nenhuma alteração detectada. Os dados são iguais.");
+
+      const updatedUser = await User.findByIdAndUpdate(id, filteredUserData, {
+        new: true,
+      }).exec();
+
+      return updatedUser;
+    } catch (error) {
+      Logger.error("Erro ao atualizar o usuário", error);
+      throw error;
+    }
+  }
+
   async getUserByEmail(email: string): Promise<IUser | null> {
     return await User.findOne({ email });
   }
@@ -40,26 +85,9 @@ class UserService {
     return await User.findOne({ username });
   }
 
-  async getUserById(id: string): Promise<IUser | null> {
+  async getUserById(id: ObjectId): Promise<IUser | null> {
     return await User.findById(id);
   }
-
-  generateAuthToken(user: IUser): string {
-    if (!process.env.JWT_SECRET) {
-      throw new Error("JWT_SECRET não está definido no .env");
-    }
-
-    if (!user.id) {
-      throw new Error("Usuário sem ID válido");
-    }
-
-    return jwt.sign(
-      { id: user.id, username: user.username },
-      process.env.JWT_SECRET,
-      { expiresIn: "12h" }
-    );
-  }
 }
-
 
 export const userService = new UserService();

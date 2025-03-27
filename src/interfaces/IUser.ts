@@ -1,7 +1,7 @@
 import { Document, ObjectId } from "mongoose";
 
 export interface IUser extends Document {
-  _id: ObjectId;
+  id: string;
   username: string;
   email: string;
   password: string;
@@ -11,6 +11,4 @@ export interface IUser extends Document {
   grade?: string;
   passwordResetToken?: string;
   emprestimosAtivos: ObjectId[];
-
-  
 }

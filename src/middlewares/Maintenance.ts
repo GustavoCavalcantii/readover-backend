@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import { MaintenanceResponse } from "../types/Responses/MaintenanceResponse";
+import { MaintenanceResponse } from "../@types/Responses/MaintenanceResponse";
 
-export default function maintenanceMiddleware(
+export default function MaintenanceMiddleware(
   req: Request,
   res: Response,
   next: NextFunction
