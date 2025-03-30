@@ -34,11 +34,11 @@ export default async function VerifyToken(
 
   const user = await userService.getUserById(id);
 
-  if (!user) {
+  if (!user || user.deleted) {
     res.status(401).json(ErrorResponse("Não autorizado", 401));
     return;
   }
-
+  
   req.user = user;
 
   next();

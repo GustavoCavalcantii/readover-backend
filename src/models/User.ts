@@ -1,6 +1,8 @@
 import mongoose, { Schema, Types, CallbackError  } from "mongoose";
 import { IUser } from "../interfaces/IUser";
 import bcrypt from "bcryptjs";
+import { Roles } from "../enums/User/UserRole";
+import formatBrasiliaDate from "../utils/dateConverter";
 
 const userSchema = new Schema<IUser>({
   username: { type: String, required: true },
@@ -8,14 +10,19 @@ const userSchema = new Schema<IUser>({
   password: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
-  accessLevel: { type: Number, default: 0, required: false },
+  deleted: { type: Boolean, default: false },
+  accessLevel: { type: String, default: Roles.USER, required: false },
   grade: { type: String, required: false },
   passwordResetToken: { type: String, required: false },
-  emprestimosAtivos: { type: [Types.ObjectId], ref: "Loan" },
+  activeloans: { type: [Types.ObjectId], ref: "Loan" },
 });
 
 userSchema.pre<IUser>("save", async function (next) {
   if (!this.isModified("senha")) return next(); 
+
+  if (this.isModified()) {
+    this.updatedAt = new Date();
+  }
 
   try {
     const salt = await bcrypt.genSalt(10); 
@@ -29,8 +36,30 @@ userSchema.pre<IUser>("save", async function (next) {
   }
 });
 
+userSchema.pre("updateOne", async function (next) {
+  const update = this.getUpdate() as Partial<IUser>;
+
+  update.updatedAt = new Date();
+
+  if (update.password) {
+    try {
+      const salt = await bcrypt.genSalt(10);
+      update.password = await bcrypt.hash(update.password, salt);
+      this.setUpdate(update);
+    } catch (error) {
+      return next(error as CallbackError);
+    }
+  }
+
+  next();
+});
+
 userSchema.pre("findOneAndUpdate", async function (next) {
   const update = this.getUpdate() as Partial<IUser>;
+
+  update.updatedAt = new Date(); 
+
+  console.log(formatBrasiliaDate(update.updatedAt));
 
   if (update.password) {
     try {
@@ -46,7 +75,7 @@ userSchema.pre("findOneAndUpdate", async function (next) {
 });
 
 userSchema.methods.comparePassword = async function (senha: string) {
-  return bcrypt.compare(senha, this.senha);
+  return bcrypt.compare(senha, this.password);
 };
 
 const User = mongoose.model<IUser>("User", userSchema);

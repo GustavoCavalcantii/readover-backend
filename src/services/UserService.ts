@@ -15,7 +15,6 @@ class UserService {
       username: createUser.username,
       email: createUser.email,
       password: await bcrypt.hash(createUser.password, 10),
-      accessLevel: 0,
       grade: createUser.grade,
     });
 
@@ -38,22 +37,11 @@ class UserService {
 
       if (!existingUser) throw new Error("Usuário não encontrado");
 
-      if (userData.email) {
-        if (userData.email !== existingUser.email) {
-          const emailExists = await User.findOne({
-            email: userData.email,
-          }).exec();
+      if (userData.email)
+        throw new Error("A alteração de e-mail requer verificação.");
 
-          if (emailExists)
-            throw new Error("Este e-mail já está em uso. Tente outro.");
-        }
-
-        //TODO: ENVIAR EMAIL PARA TROCAR O EMAIL
-      }
-
-      if (userData.password) {
-        //TODO: ENVIAR EMAIL PARA TROCAR A SENHA
-      }
+      if (userData.password)
+        throw new Error("A alteração de senha requer verificação.");
 
       const filteredUserData = Object.fromEntries(
         Object.entries(userData).filter(([_, value]) => value !== undefined)
@@ -83,6 +71,22 @@ class UserService {
 
   async getUserByUsername(username: string): Promise<IUser | null> {
     return await User.findOne({ username });
+  }
+
+  async deleteUser(id: string): Promise<Boolean> {
+    if (!ObjectId.isValid(id)) {
+      throw new Error("ID inválido.");
+    }
+
+    const user = await User.findOne({ _id: id });
+
+    if (!user) {
+      throw new Error("O usuário não existe.");
+    }
+
+    const result = await user.updateOne({ deleted: true });
+
+    return result.nModified > 0;
   }
 
   async getUserById(id: ObjectId): Promise<IUser | null> {

@@ -1,4 +1,5 @@
 import { Document, ObjectId } from "mongoose";
+import { Roles } from "../enums/User/UserRole";
 
 export interface IUser extends Document {
   id: string;
@@ -7,8 +8,10 @@ export interface IUser extends Document {
   password: string;
   createdAt: Date;
   updatedAt: Date;
-  accessLevel: number;
+  accessLevel: Roles;
   grade?: string;
   passwordResetToken?: string;
-  emprestimosAtivos: ObjectId[];
+  deleted?: boolean;
+  activeloans: ObjectId[];
+  comparePassword(senha: string): Promise<boolean>;
 }

@@ -44,6 +44,22 @@ class AuthService {
     await refreshToken.save();
     return { accessToken, refreshToken: refreshToken.token };
   }
+
+  public async deleteToken(refreshToken: string): Promise<Boolean> {
+    const { deletedCount } = await RefreshToken.deleteOne({
+      refreshToken
+    });
+
+    return deletedCount > 0;
+  }
+
+  public async deleteTokens(userId: string): Promise<Boolean> {
+    const { deletedCount } = await RefreshToken.deleteMany({
+      userId,
+    });
+
+    return deletedCount > 0;
+  }
 }
 
 export default new AuthService();

@@ -14,7 +14,6 @@ const app = express();
 /*
   MIDDLEWARES
 */
-app.use(JsonRequiredMiddleware);
 app.use(cookieParser()); 
 app.use(express.json()); 
 app.use(cors())
