@@ -6,6 +6,7 @@ import "express-async-errors";
 import cookieParser from "cookie-parser";
 
 import UserRouter from "./routes/User";
+import AdminRouter from "./routes/Admin";
 import { ErrorMiddleware } from "./middlewares/Error";
 import JsonRequiredMiddleware from "./middlewares/JsonRequired";
 
@@ -25,6 +26,7 @@ app.use(MaintenanceMiddleware);
   ROTAS
 */
 app.use(UserRouter);
+app.use("/admin", AdminRouter);
 
 
 app.use(ErrorMiddleware); //SEMPRE O ÚLTIMO

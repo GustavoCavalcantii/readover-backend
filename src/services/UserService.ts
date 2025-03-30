@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import Logger from "../config/Logger";
 import { UserDTO } from "../dtos/UserDTO";
 import bcrypt from "bcryptjs";
+import { ISecureUser } from "../interfaces/ISecureUser";
 
 dotenv.config();
 
@@ -67,6 +68,27 @@ class UserService {
 
   async getUserByEmail(email: string): Promise<IUser | null> {
     return await User.findOne({ email });
+  }
+
+  async getAllUsersExcept(id: string): Promise<ISecureUser[] | null> {
+    const users = await User.find({ _id: { $ne: id } });
+
+    if (users.length > 0) {
+      const secureUsers: ISecureUser[] = users.map((user) => {
+        const { username, email, grade, activeloans} = user.toObject();
+
+         return {
+           username,
+           email,
+           grade,
+           activeloans
+         };
+      });
+
+      return secureUsers;
+    }
+
+    return null;
   }
 
   async getUserByUsername(username: string): Promise<IUser | null> {
