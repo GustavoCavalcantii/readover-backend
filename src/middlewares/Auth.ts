@@ -38,7 +38,7 @@ export default async function VerifyToken(
     res.status(401).json(ErrorResponse("Não autorizado", 401));
     return;
   }
-  
+
   req.user = user;
 
   next();

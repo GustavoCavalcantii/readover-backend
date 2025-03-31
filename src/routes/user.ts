@@ -10,11 +10,7 @@ const router = Router();
 
 router.get("/", StatusController.getStatus);
 
-router.post("/refresh", UserController.refresh);
-
 router.delete("/deletar", VerifyToken, UserController.deleteUser);
-
-router.post("/sair", UserController.logout);
 
 router.put(
   "/editar-conta",
@@ -22,13 +18,6 @@ router.put(
   JsonRequiredMiddleware,
   ValidateRequest(UserDTO, ["update"]),
   UserController.edit
-);
-
-router.post(
-  "/entrar",
-  JsonRequiredMiddleware,
-  ValidateRequest(UserDTO, ["login"]),
-  UserController.login
 );
 
 router.post(

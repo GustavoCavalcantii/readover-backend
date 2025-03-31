@@ -1,6 +1,8 @@
 import jwt from "jsonwebtoken";
 import { RefreshToken } from "../models/RefreshToken.";
 import { v4 as uuidv4 } from "uuid";
+import { ResetToken } from "../models/ResetToken";
+import { ResetTypes } from "../enums/User/ResetTypes";
 
 const SECRET_KEY = process.env.JWT_SECRET as string;
 
@@ -10,54 +12,54 @@ class AuthService {
     userAgent: string,
     ip: string
   ): Promise<{ refreshToken: string; accessToken: string }> {
-    const accessToken = jwt.sign({ id: userId }, SECRET_KEY, {
+    const accessToken = jwt.sign({ id: userId, sub: userId }, SECRET_KEY, {
       expiresIn: "15m",
     });
 
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 dias
 
-    let refreshToken = await RefreshToken.findOne({ userId, userAgent, ip });
+    const refreshToken = await RefreshToken.findOneAndUpdate(
+      { userId, userAgent, ip },
+      { token: uuidv4(), expiresAt },
+      { new: true, upsert: true }
+    );
 
-    if (refreshToken) {
-      if (refreshToken.expiresAt < new Date()) {
-        await RefreshToken.deleteOne({ userId, userAgent, ip });
-        refreshToken = null;
-      }
-    }
-
-    if (refreshToken) {
-      refreshToken.token = uuidv4();
-      refreshToken.expiresAt = expiresAt;
-
-      await refreshToken.save();
-      return { accessToken, refreshToken: refreshToken.token };
-    }
-
-    refreshToken = new RefreshToken({
-      userId,
-      token: uuidv4(),
-      expiresAt,
-      userAgent,
-      ip,
-    });
-
-    await refreshToken.save();
     return { accessToken, refreshToken: refreshToken.token };
   }
 
-  public async deleteToken(refreshToken: string): Promise<Boolean> {
+  public async deleteRefreshToken(refreshToken: string): Promise<boolean> {
     const { deletedCount } = await RefreshToken.deleteOne({
-      refreshToken
+      token: refreshToken,
     });
-
     return deletedCount > 0;
   }
 
-  public async deleteTokens(userId: string): Promise<Boolean> {
-    const { deletedCount } = await RefreshToken.deleteMany({
-      userId,
-    });
+  public async deleteRefreshTokens(userId: string): Promise<boolean> {
+    const { deletedCount } = await RefreshToken.deleteMany({ userId });
+    return deletedCount > 0;
+  }
 
+  public async createResetToken(
+    userId: string,
+    userAgent: string,
+    ip: string,
+    type: ResetTypes
+  ): Promise<string> {
+    const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 min
+
+    const resetToken = await ResetToken.findOneAndUpdate(
+      { userId, userAgent, ip, type },
+      { token: uuidv4(), expiresAt },
+      { new: true, upsert: true }
+    );
+
+    return resetToken.token;
+  }
+
+  public async deleteToken(resetToken: string): Promise<boolean> {
+    const { deletedCount } = await ResetToken.deleteOne({
+      token: resetToken,
+    });
     return deletedCount > 0;
   }
 }

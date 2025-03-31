@@ -6,9 +6,9 @@ import "express-async-errors";
 import cookieParser from "cookie-parser";
 
 import UserRouter from "./routes/User";
+import AuthRouter from "./routes/Auth";
 import AdminRouter from "./routes/Admin";
 import { ErrorMiddleware } from "./middlewares/Error";
-import JsonRequiredMiddleware from "./middlewares/JsonRequired";
 
 const app = express();
 
@@ -26,6 +26,7 @@ app.use(MaintenanceMiddleware);
   ROTAS
 */
 app.use(UserRouter);
+app.use(AuthRouter);
 app.use("/admin", AdminRouter);
 
 

@@ -32,9 +32,38 @@ class UserService {
     }
   }
 
+  async updatePassword(id: string, password: string): Promise<IUser | null> {
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      { password: password },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      throw new Error("Usuário não encontrado");
+    }
+
+    return updatedUser;
+  }
+
+  async updateEmail(id: string, email: string): Promise<IUser | null> {
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      { email: email },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      throw new Error("Usuário não encontrado");
+    }
+
+    return updatedUser;
+  }
+
   async updateUser(id: string, userData: UserDTO): Promise<IUser | null> {
     try {
-      const existingUser = await User.findById(id).exec();
+      const objectId = new ObjectId(id);
+      const existingUser = await this.getUserById(objectId);
 
       if (!existingUser) throw new Error("Usuário não encontrado");
 
@@ -49,8 +78,10 @@ class UserService {
       ) as Partial<UserDTO>;
 
       const isDataEqual = (
-        Object.keys(filteredUserData) as (keyof UserDTO)[]
-      ).every((key) => filteredUserData[key] === existingUser[key]);
+        Object.keys(filteredUserData) as (keyof IUser)[]
+      ).every(
+        (key) => filteredUserData[key as keyof UserDTO] === existingUser[key]
+      );
 
       if (isDataEqual)
         throw new Error("Nenhuma alteração detectada. Os dados são iguais.");
@@ -75,14 +106,14 @@ class UserService {
 
     if (users.length > 0) {
       const secureUsers: ISecureUser[] = users.map((user) => {
-        const { username, email, grade, activeloans} = user.toObject();
+        const { username, email, grade, activeloans } = user.toObject();
 
-         return {
-           username,
-           email,
-           grade,
-           activeloans
-         };
+        return {
+          username,
+          email,
+          grade,
+          activeloans,
+        };
       });
 
       return secureUsers;
