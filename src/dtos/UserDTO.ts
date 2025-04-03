@@ -25,25 +25,31 @@ export class UserDTO {
 
   @IsOptional({ groups: ["update"] })
   @IsString({
-    groups: ["create", "login"],
+    groups: ["create", "login", "requestReset", "resetEmail"],
     message: "O email deve ser uma string",
   })
   @IsEmail(
     {},
     {
       message: "Por favor, forneça um email válido.",
-      groups: ["create", "login", "update"],
+      groups: ["create", "login", "update", "requestReset", "resetEmail"],
     }
   )
   email: string;
-
+  
   @IsString({
-    groups: ["create", "login"],
+    groups: ["create", "login", "resetPass"],
     message: "A senha deve ser uma string",
   })
   @Length(6, 20, {
     message: "A senha deve ter entre 6 e 20 caracteres.",
-    groups: ["create"],
+    groups: ["create", "resetPass"],
   })
   password: string;
+
+  @IsString({
+    groups: ["resetPass", "resetEmail"],
+    message: "A senha deve ser uma string",
+  })
+  resetToken: string;
 }

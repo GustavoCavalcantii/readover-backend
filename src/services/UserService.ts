@@ -6,6 +6,8 @@ import dotenv from "dotenv";
 import Logger from "../config/logger";
 import { UserDTO } from "../dtos/UserDTO";
 import bcrypt from "bcryptjs";
+import { ISecureUser } from "../interfaces/ISecureUser";
+import { Roles } from "../enums/User/UserRole";
 
 dotenv.config();
 
@@ -15,7 +17,6 @@ class UserService {
       username: createUser.username,
       email: createUser.email,
       password: await bcrypt.hash(createUser.password, 10),
-      accessLevel: 0,
       grade: createUser.grade,
     });
 
@@ -32,36 +33,83 @@ class UserService {
     }
   }
 
+  async updateAccessLevel(id: string, isAdmin: boolean): Promise<IUser | null> {
+    const user = await User.findById(id);
+
+    if (!user) {
+      throw new Error("Usuário não encontrado");
+    }
+
+    const newAccessLevel = isAdmin ? Roles.ADMIN : Roles.USER;
+
+    if (user.accessLevel === newAccessLevel) {
+      return user; 
+    }
+
+    user.accessLevel = newAccessLevel;
+    await user.save();
+
+    return user;
+  }
+
+  async updatePassword(id: string, password: string): Promise<IUser | null> {
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      { password: password },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      throw new Error("Usuário não encontrado");
+    }
+
+    return updatedUser;
+  }
+
+  async updateEmail(id: string, email: string): Promise<IUser | null> {
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      { email: email },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      throw new Error("Usuário não encontrado");
+    }
+
+    return updatedUser;
+  }
+
   async updateUser(id: string, userData: UserDTO): Promise<IUser | null> {
     try {
-      const existingUser = await User.findById(id).exec();
+      const objectId = new ObjectId(id);
+      const existingUser = await this.getUserById(objectId);
 
       if (!existingUser) throw new Error("Usuário não encontrado");
 
-      if (userData.email) {
-        if (userData.email !== existingUser.email) {
-          const emailExists = await User.findOne({
-            email: userData.email,
-          }).exec();
+      if (userData.email)
+        throw new Error("A alteração de e-mail requer verificação.");
 
-          if (emailExists)
-            throw new Error("Este e-mail já está em uso. Tente outro.");
-        }
+      if (userData.password)
+        throw new Error("A alteração de senha requer verificação.");
 
-        //TODO: ENVIAR EMAIL PARA TROCAR O EMAIL
-      }
-
-      if (userData.password) {
-        //TODO: ENVIAR EMAIL PARA TROCAR A SENHA
-      }
+      const allowedFields = ["username", "grade"];
 
       const filteredUserData = Object.fromEntries(
-        Object.entries(userData).filter(([_, value]) => value !== undefined)
+        Object.entries(userData).filter(
+          ([key, value]) => allowedFields.includes(key) && value !== undefined
+        )
       ) as Partial<UserDTO>;
 
-      const isDataEqual = (
-        Object.keys(filteredUserData) as (keyof UserDTO)[]
-      ).every((key) => filteredUserData[key] === existingUser[key]);
+      if (Object.keys(filteredUserData).length === 0) {
+        throw new Error("Nenhuma alteração válida detectada.");
+      }
+
+      const isDataEqual = Object.keys(filteredUserData).every(
+        (key) =>
+          filteredUserData[key as keyof UserDTO] ===
+          existingUser[key as keyof IUser]
+      );
 
       if (isDataEqual)
         throw new Error("Nenhuma alteração detectada. Os dados são iguais.");
@@ -72,7 +120,6 @@ class UserService {
 
       return updatedUser;
     } catch (error) {
-      Logger.error("Erro ao atualizar o usuário", error);
       throw error;
     }
   }
@@ -81,8 +128,45 @@ class UserService {
     return await User.findOne({ email });
   }
 
+  async getAllUsersExcept(id: string): Promise<ISecureUser[] | null> {
+    const users = await User.find({ _id: { $ne: id } });
+
+    if (users.length > 0) {
+      const secureUsers: ISecureUser[] = users.map((user) => {
+        const { username, email, grade, activeloans } = user.toObject();
+
+        return {
+          username,
+          email,
+          grade,
+          activeloans,
+        };
+      });
+
+      return secureUsers;
+    }
+
+    return null;
+  }
+
   async getUserByUsername(username: string): Promise<IUser | null> {
     return await User.findOne({ username });
+  }
+
+  async deleteUser(id: string): Promise<Boolean> {
+    if (!ObjectId.isValid(id)) {
+      throw new Error("ID inválido.");
+    }
+
+    const user = await User.findOne({ _id: id });
+
+    if (!user) {
+      throw new Error("O usuário não existe.");
+    }
+
+    const result = await user.updateOne({ deleted: true });
+
+    return result.nModified > 0;
   }
 
   async getUserById(id: ObjectId): Promise<IUser | null> {
