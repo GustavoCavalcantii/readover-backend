@@ -1,8 +1,8 @@
-import logger from "./config/Logger";
+import logger from "./config/logger";
 import { ApiEnviroment } from "./enums/Api/ApiEnviroment";
 import app from "./routes";
-import { generateASCII } from "./utils/NameGenerator";
-import { connectDB, disconnectDB } from "./database/Connection";
+import { generateASCII } from "./utils/nameGenerator";
+import { connectDB, disconnectDB } from "./database/connection";
 import { config } from "dotenv";
 import packageJson from "../package.json";
 

@@ -3,7 +3,7 @@ import { SuccessResponse } from "../@types/Responses/SuccessResponse";
 import { ErrorResponse } from "../@types/Responses/ErrorResponse";
 import { userService } from "../services/UserService";
 import { UserDTO } from "../dtos/UserDTO";
-import logger from "../config/Logger";
+import logger from "../config/logger";
 import { IErrorDetail } from "../interfaces/IErrorDetail";
 import { plainToClass } from "class-transformer";
 import User from "../models/User";

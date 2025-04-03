@@ -5,7 +5,8 @@ import MaintenanceMiddleware from "./middlewares/Maintenance";
 import "express-async-errors";
 import cookieParser from "cookie-parser";
 
-import UserRouter from "./routes/User";
+import UserRouter from "./routes/user";
+import EmailRouter from "./routes/email";
 import { ErrorMiddleware } from "./middlewares/Error";
 import JsonRequiredMiddleware from "./middlewares/JsonRequired";
 
@@ -26,6 +27,7 @@ app.use(MaintenanceMiddleware);
   ROTAS
 */
 app.use(UserRouter);
+app.use(EmailRouter);
 
 
 app.use(ErrorMiddleware); //SEMPRE O ÚLTIMO
