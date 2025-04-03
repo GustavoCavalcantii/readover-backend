@@ -7,6 +7,7 @@ import Logger from "../config/Logger";
 import { UserDTO } from "../dtos/UserDTO";
 import bcrypt from "bcryptjs";
 import { ISecureUser } from "../interfaces/ISecureUser";
+import { Roles } from "../enums/User/UserRole";
 
 dotenv.config();
 
@@ -30,6 +31,25 @@ class UserService {
       Logger.error("Erro ao criar usuário:", error);
       throw new Error("Ocorreu um erro ao criar o usuário.");
     }
+  }
+
+  async updateAccessLevel(id: string, isAdmin: boolean): Promise<IUser | null> {
+    const user = await User.findById(id);
+
+    if (!user) {
+      throw new Error("Usuário não encontrado");
+    }
+
+    const newAccessLevel = isAdmin ? Roles.ADMIN : Roles.USER;
+
+    if (user.accessLevel === newAccessLevel) {
+      return user; 
+    }
+
+    user.accessLevel = newAccessLevel;
+    await user.save();
+
+    return user;
   }
 
   async updatePassword(id: string, password: string): Promise<IUser | null> {
@@ -73,14 +93,22 @@ class UserService {
       if (userData.password)
         throw new Error("A alteração de senha requer verificação.");
 
+      const allowedFields = ["username", "grade"];
+
       const filteredUserData = Object.fromEntries(
-        Object.entries(userData).filter(([_, value]) => value !== undefined)
+        Object.entries(userData).filter(
+          ([key, value]) => allowedFields.includes(key) && value !== undefined
+        )
       ) as Partial<UserDTO>;
 
-      const isDataEqual = (
-        Object.keys(filteredUserData) as (keyof IUser)[]
-      ).every(
-        (key) => filteredUserData[key as keyof UserDTO] === existingUser[key]
+      if (Object.keys(filteredUserData).length === 0) {
+        throw new Error("Nenhuma alteração válida detectada.");
+      }
+
+      const isDataEqual = Object.keys(filteredUserData).every(
+        (key) =>
+          filteredUserData[key as keyof UserDTO] ===
+          existingUser[key as keyof IUser]
       );
 
       if (isDataEqual)
@@ -92,7 +120,6 @@ class UserService {
 
       return updatedUser;
     } catch (error) {
-      Logger.error("Erro ao atualizar o usuário", error);
       throw error;
     }
   }

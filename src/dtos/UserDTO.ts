@@ -36,7 +36,7 @@ export class UserDTO {
     }
   )
   email: string;
-
+  
   @IsString({
     groups: ["create", "login", "resetPass"],
     message: "A senha deve ser uma string",

@@ -9,12 +9,17 @@ import UserRouter from "./routes/User";
 import AuthRouter from "./routes/Auth";
 import AdminRouter from "./routes/Admin";
 import { ErrorMiddleware } from "./middlewares/Error";
+import { ValidateRoles } from "./middlewares/Roles";
+import { Roles } from "./enums/User/UserRole";
+import VerifyToken from "./middlewares/Auth";
+import { limiter } from "./middlewares/Spam";
 
 const app = express();
 
 /*
   MIDDLEWARES
 */
+app.use(limiter)
 app.use(cookieParser()); 
 app.use(express.json()); 
 app.use(cors())
@@ -27,7 +32,7 @@ app.use(MaintenanceMiddleware);
 */
 app.use(UserRouter);
 app.use(AuthRouter);
-app.use("/admin", AdminRouter);
+app.use("/admin", VerifyToken, ValidateRoles(Roles.ADMIN), AdminRouter);
 
 
 app.use(ErrorMiddleware); //SEMPRE O ÚLTIMO

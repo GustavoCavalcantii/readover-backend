@@ -100,7 +100,7 @@ class UserController {
 
       const commonErrors = [
         "Este e-mail já está em uso. Tente outro.",
-        "Nenhuma alteração detectada. Os dados são iguais.",
+        "Nenhuma alteração válida detectada.",
         "Usuário não encontrado",
         "A alteração de e-mail requer verificação.",
         "A alteração de senha requer verificação.",
