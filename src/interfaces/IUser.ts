@@ -4,6 +4,7 @@ import { Roles } from "../enums/User/UserRole";
 export interface IUser extends Document {
   id: string;
   username: string;
+  profileImage: string;
   email: string;
   password: string;
   createdAt: Date;
@@ -12,6 +13,6 @@ export interface IUser extends Document {
   grade?: string;
   passwordResetToken?: string;
   deleted?: boolean;
-  activeloans: ObjectId[];
+  activeLoans: ObjectId[];
   comparePassword(senha: string): Promise<boolean>;
 }

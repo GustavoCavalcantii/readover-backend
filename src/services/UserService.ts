@@ -43,7 +43,7 @@ class UserService {
     const newAccessLevel = isAdmin ? Roles.ADMIN : Roles.USER;
 
     if (user.accessLevel === newAccessLevel) {
-      return user; 
+      return user;
     }
 
     user.accessLevel = newAccessLevel;
@@ -82,8 +82,7 @@ class UserService {
 
   async updateUser(id: string, userData: UserDTO): Promise<IUser | null> {
     try {
-      const objectId = new ObjectId(id);
-      const existingUser = await this.getUserById(objectId);
+      const existingUser = await this.getUserById(id);
 
       if (!existingUser) throw new Error("Usuário não encontrado");
 
@@ -132,21 +131,41 @@ class UserService {
     const users = await User.find({ _id: { $ne: id } });
 
     if (users.length > 0) {
-      const secureUsers: ISecureUser[] = users.map((user) => {
-        const { username, email, grade, activeloans } = user.toObject();
+      const secureUsers: ISecureUser[] = await Promise.all(
+        users.map(async (user) => {
+          const { username, email, grade, profileImage } = user.toObject();
+          const activeLoans = await this.getActiveLoansName(user.id);
 
-        return {
-          username,
-          email,
-          grade,
-          activeloans,
-        };
-      });
+          return {
+            username,
+            email,
+            grade,
+            profileImage,
+            activeLoans,
+          };
+        })
+      );
 
       return secureUsers;
     }
 
     return null;
+  }
+
+  async setUserProfileImage(id: string, imageName: string): Promise<Boolean> {
+    if (!ObjectId.isValid(id)) {
+      throw new Error("ID inválido.");
+    }
+
+    const user = await User.findOne({ _id: id });
+
+    if (!user) {
+      throw new Error("O usuário não existe.");
+    }
+
+    const result = await user.updateOne({ profileImage: imageName });
+
+    return result.nModified > 0;
   }
 
   async getUserByUsername(username: string): Promise<IUser | null> {
@@ -169,8 +188,13 @@ class UserService {
     return result.nModified > 0;
   }
 
-  async getUserById(id: ObjectId): Promise<IUser | null> {
+  async getUserById(id: string): Promise<IUser | null> {
     return await User.findById(id);
+  }
+
+  async getActiveLoansName(userId: string): Promise<String[] | null> {
+    //TODO: Consultar empréstimos e retornar um array com um link ou os seus nomes
+    return ["Machado de assis"];
   }
 }
 

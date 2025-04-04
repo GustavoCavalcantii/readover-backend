@@ -2,17 +2,17 @@ import mongoose, { Schema, Types, CallbackError  } from "mongoose";
 import { IUser } from "../interfaces/IUser";
 import bcrypt from "bcryptjs";
 import { Roles } from "../enums/User/UserRole";
-import formatBrasiliaDate from "../utils/dateConverter";
 
 const userSchema = new Schema<IUser>(
   {
     username: { type: String, required: true },
     email: { type: String, required: true, unique: true },
+    profileImage: { type: String },
     password: { type: String, required: true },
     deleted: { type: Boolean, default: false },
     accessLevel: { type: String, default: Roles.USER, required: false },
     grade: { type: String, required: false },
-    activeloans: { type: [Types.ObjectId], ref: "Loan" },
+    activeLoans: { type: [Types.ObjectId], ref: "Loan" },
   },
   { timestamps: true }
 );

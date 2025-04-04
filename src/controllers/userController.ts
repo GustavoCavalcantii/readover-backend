@@ -7,6 +7,10 @@ import logger from "../config/Logger";
 import { plainToClass } from "class-transformer";
 import { IUser } from "../interfaces/IUser";
 import AuthService from "../services/AuthService";
+import { ConsultProfile } from "../dtos/ConsultProfile";
+import ImageService from "../services/ImageService";
+import { ImageTypes } from "../enums/Image/ImageTypes";
+import { ISecureUser } from "../interfaces/ISecureUser";
 
 class UserController {
   static async register(req: Request, res: Response) {
@@ -79,7 +83,7 @@ class UserController {
         loggedInUser.id,
         userData
       );
-      
+
       if (!updatedUser) {
         res.status(401).json(ErrorResponse("Usuário não encontrado", 401));
         return;
@@ -113,6 +117,97 @@ class UserController {
 
       logger.error("Erro ao atualizar usuário", error);
       res.status(500).json(ErrorResponse("Erro ao atualizar usuário.", 500));
+    }
+  }
+
+  static async getProfileImage(req: Request, res: Response) {
+    try {
+      const consultUserDto = plainToClass(ConsultProfile, req.params);
+
+      const route = await ImageService.getImage(
+        consultUserDto.imageId,
+        ImageTypes.PROFILE
+      );
+
+      res.status(200).sendFile(route);
+    } catch (error) {
+      logger.error("Erro ao consultar a imagem de perfil do usuário", error);
+      res
+        .status(500)
+        .json(
+          ErrorResponse("Erro ao consultar a imagem de perfil usuário", 500)
+        );
+    }
+  }
+
+  static async setProfileImage(req: Request, res: Response) {
+    try {
+      const loggedInUser = req.user as IUser;
+      if (!loggedInUser) {
+        res.status(401).json(ErrorResponse("Usuário não autenticado.", 401));
+        return;
+      }
+
+      if (!req.file || !req.newFilename) {
+        res.status(400).json(ErrorResponse("Nenhum arquivo enviado.", 400));
+        return;
+      }
+
+      const imageName = req.newFilename;
+
+      userService.setUserProfileImage(loggedInUser.id, imageName);
+
+      res
+        .status(200)
+        .json(
+          SuccessResponse(null, "Imagem de perfil atualizado com sucesso", 200)
+        );
+    } catch (error) {
+      logger.error("Erro ao atualizar a imagem de perfil do usuário", error);
+      res
+        .status(500)
+        .json(
+          ErrorResponse("Erro ao atualizar a imagem de perfil usuário", 500)
+        );
+    }
+  }
+
+  static async getInfo(req: Request, res: Response) {
+    try {
+      const loggedInUser = req.user as IUser;
+      if (!loggedInUser) {
+        res.status(401).json(ErrorResponse("Usuário não autenticado.", 401));
+        return;
+      }
+
+      const user = await userService.getUserById(loggedInUser.id);
+
+      if (!user) {
+        return;
+      }
+
+      const activeLoans = await userService.getActiveLoansName(user.id);
+
+      const payload: ISecureUser = {
+        username: user.username,
+        email: user.email,
+        grade: user.grade,
+        profileImage: user.profileImage,
+        activeLoans: activeLoans,
+      };
+
+      res
+        .status(200)
+        .json(
+          SuccessResponse(
+            payload,
+            "Informações do usuário recebidas com sucesso",
+            200
+          )
+        );
+    } catch (error) {
+      logger.error("Erro ao deletar usuário", error);
+      res.status(500).json(ErrorResponse("Erro ao deletar usuário", 500));
     }
   }
 
