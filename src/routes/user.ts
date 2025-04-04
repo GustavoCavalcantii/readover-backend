@@ -1,6 +1,6 @@
 import { Router } from "express";
-import StatusController from "../controllers/statusController";
-import UserController from "../controllers/userController";
+import StatusController from "../controllers/StatusController";
+import UserController from "../controllers/UserController";
 import { ValidateRequest } from "../middlewares/ValidateRequest";
 import { UserDTO } from "../dtos/UserDTO";
 import VerifyToken from "../middlewares/Auth";
