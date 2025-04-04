@@ -3,7 +3,7 @@ import User from "../models/User";
 import { MongoServerError, ObjectId } from "mongodb";
 
 import dotenv from "dotenv";
-import Logger from "../config/logger";
+import Logger from "../config/Logger";
 import { UserDTO } from "../dtos/UserDTO";
 import bcrypt from "bcryptjs";
 import { ISecureUser } from "../interfaces/ISecureUser";
