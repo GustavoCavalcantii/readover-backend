@@ -5,6 +5,10 @@ import BookController from "../controllers/BookController";
 
 const router = Router();
 
+router.get("/", BookController.getAll);
+router.post("/", BookController.create);
+router.put("/:id", BookController.update);
+router.delete("/:id", BookController.delete);
 router.post(
   "/imagem",
   VerifyToken,

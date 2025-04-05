@@ -5,10 +5,11 @@ import MaintenanceMiddleware from "./middlewares/Maintenance";
 import "express-async-errors";
 import cookieParser from "cookie-parser";
 
-import UserRouter from "./routes/user";
+import UserRouter from "./routes/User";
 import AuthRouter from "./routes/Auth";
 import AdminRouter from "./routes/Admin";
 import BookRouter from "./routes/Book";
+import EmailRouter from "./routes/Email";
 import { ErrorMiddleware } from "./middlewares/Error";
 import { ValidateRoles } from "./middlewares/Roles";
 import { Roles } from "./enums/User/UserRole";
@@ -35,6 +36,7 @@ app.use(MaintenanceMiddleware);
 app.use(UserRouter);
 app.use("/livro", BookRouter);
 app.use(AuthRouter);
+app.use(EmailRouter);
 app.use("/admin", VerifyToken, ValidateRoles(Roles.ADMIN), AdminRouter);
 
 app.use(ErrorMiddleware);

@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
 import { SuccessResponse } from "../@types/Responses/SuccessResponse";
 import { ErrorResponse } from "../@types/Responses/ErrorResponse";
-import logger from "../config/logger";
+import logger from "../config/Logger";
 import { IErrorDetail } from "../interfaces/IErrorDetail";
-import { EmailService } from "../services/emailService";
+import { EmailService } from "../services/EmailService";
 
 export class EmailController {
     static async sendEmail(req: Request, res: Response) {

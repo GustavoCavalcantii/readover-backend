@@ -7,6 +7,7 @@ import { plainToClass } from "class-transformer";
 import { UserDTO } from "../dtos/UserDTO";
 import { RefreshToken } from "../models/RefreshToken.";
 import logger from "../config/Logger";
+import { EmailService } from "../services/EmailService";
 import { ResetToken } from "../models/ResetToken";
 import { ResetTypes } from "../enums/User/ResetTypes";
 
@@ -223,6 +224,8 @@ class AuthController {
       const link = `https://readover.techgonz.com.br/redefinir-senha?token=${token}`;
 
       // TODO: Implementar envio de e-mail com o link
+      await EmailService.sendPasswordResetEmail(user.email, user.username, link);
+
 
       res
         .status(200)
