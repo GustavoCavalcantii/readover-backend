@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
-import { ApiEnviroment } from "../enum/Api/ApiEnviroment";
+import { ApiEnviroment } from "../enums/Api/ApiEnviroment";
 import { config } from "dotenv";
-import { ApiStatusResponse, successResponse } from "../utils/Responses";
 import packageJson from "../../package.json";
+import { ApiStatusResponse } from "../@types/Responses/ApiStatusResponse";
+import { SuccessResponse } from "../@types/Responses/SuccessResponse";
 
 const API_NAME: string = packageJson.name;
 const API_VERSION: string = "v" + (process.env.API_VERSION || "1");
@@ -20,7 +21,7 @@ class StatusController {
       environment: environment,
     };
 
-    res.status(200).json(successResponse(response, "API está online"));
+    res.status(200).json(SuccessResponse(response, "API está online"));
   }
 }
 

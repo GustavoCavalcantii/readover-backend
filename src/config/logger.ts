@@ -24,7 +24,7 @@ const addEmote = (level: string): string => {
   }
 };
 
-const logger = winston.createLogger({
+const Logger = winston.createLogger({
   level: "debug",
   format: winston.format.combine(
     winston.format.timestamp(),
@@ -58,4 +58,4 @@ const logger = winston.createLogger({
   ],
 });
 
-export default logger;
+export default Logger;
