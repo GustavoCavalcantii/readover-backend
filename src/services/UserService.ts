@@ -8,6 +8,7 @@ import { UserDTO } from "../dtos/UserDTO";
 import bcrypt from "bcryptjs";
 import { ISecureUser } from "../interfaces/ISecureUser";
 import { Roles } from "../enums/User/UserRole";
+import LoanService from "./LoanService";
 
 dotenv.config();
 
@@ -127,29 +128,9 @@ class UserService {
     return await User.findOne({ email });
   }
 
-  async getAllUsersExcept(id: string): Promise<ISecureUser[] | null> {
+  async getAllUsersExcept(id: string): Promise<IUser[] | null> {
     const users = await User.find({ _id: { $ne: id } });
-
-    if (users.length > 0) {
-      const secureUsers: ISecureUser[] = await Promise.all(
-        users.map(async (user) => {
-          const { username, email, grade, profileImage } = user.toObject();
-          const activeLoans = await this.getActiveLoansName(user.id);
-
-          return {
-            username,
-            email,
-            grade,
-            profileImage,
-            activeLoans,
-          };
-        })
-      );
-
-      return secureUsers;
-    }
-
-    return null;
+    return users;    
   }
 
   async getUserProfileImage(id: string): Promise<string> {
@@ -200,11 +181,6 @@ class UserService {
 
   async getUserById(id: string): Promise<IUser | null> {
     return await User.findById(id);
-  }
-
-  async getActiveLoansName(userId: string): Promise<string[] | null> {
-    //TODO: Consultar empréstimos e retornar um array com um link ou os seus nomes
-    return ["Machado de assis"];
   }
 }
 
