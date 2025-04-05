@@ -153,15 +153,22 @@ class UserController {
         return;
       }
 
+      const profileImage = await userService.getUserProfileImage(
+        loggedInUser.id
+      );
+
+      let successMessage = "Imagem de perfil criada com sucesso";
+
+      if (profileImage) {
+        ImageService.deleteImage(profileImage, ImageTypes.PROFILE);
+        successMessage = "Imagem de perfil atualizada com sucesso";
+      }
+
       const imageName = req.newFilename;
 
       userService.setUserProfileImage(loggedInUser.id, imageName);
 
-      res
-        .status(200)
-        .json(
-          SuccessResponse(null, "Imagem de perfil atualizado com sucesso", 200)
-        );
+      res.status(200).json(SuccessResponse(null, successMessage, 200));
     } catch (error) {
       logger.error("Erro ao atualizar a imagem de perfil do usuário", error);
       res

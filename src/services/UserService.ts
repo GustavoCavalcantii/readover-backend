@@ -152,12 +152,22 @@ class UserService {
     return null;
   }
 
-  async setUserProfileImage(id: string, imageName: string): Promise<Boolean> {
+  async getUserProfileImage(id: string): Promise<string> {
+    const user = await this.getUserById(id);
+
+    if (!user) {
+      throw new Error("O usuário não existe.");
+    }
+
+    return user.profileImage;
+  }
+
+  async setUserProfileImage(id: string, imageName: string): Promise<boolean> {
     if (!ObjectId.isValid(id)) {
       throw new Error("ID inválido.");
     }
 
-    const user = await User.findOne({ _id: id });
+    const user = await this.getUserById(id);
 
     if (!user) {
       throw new Error("O usuário não existe.");
@@ -192,7 +202,7 @@ class UserService {
     return await User.findById(id);
   }
 
-  async getActiveLoansName(userId: string): Promise<String[] | null> {
+  async getActiveLoansName(userId: string): Promise<string[] | null> {
     //TODO: Consultar empréstimos e retornar um array com um link ou os seus nomes
     return ["Machado de assis"];
   }

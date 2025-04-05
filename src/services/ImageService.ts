@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import UploadLocation from "../config/UploadLocation";
 import { ImageTypes } from "../enums/Image/ImageTypes";
+import Logger from "../config/Logger";
 
 class ImageService {
   async getImage(fileId: string, imageType: ImageTypes): Promise<string> {
@@ -33,6 +34,17 @@ class ImageService {
     }
 
     return foundFilePath;
+  }
+
+  async deleteImage(fileId: string, imageType: ImageTypes): Promise<boolean> {
+    try {
+      const imagePath = await this.getImage(fileId, imageType);
+      await fs.promises.unlink(imagePath);
+      return true;
+    } catch (error) {
+      Logger.error("Erro ao excluir imagem: ", error);
+      return false;
+    }
   }
 
   private async findFileRecursively(

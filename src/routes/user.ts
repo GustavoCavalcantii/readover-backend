@@ -6,16 +6,15 @@ import { UserDTO } from "../dtos/UserDTO";
 import VerifyToken from "../middlewares/Auth";
 import JsonRequiredMiddleware from "../middlewares/JsonRequired";
 import imageProfileUpload from "../config/MulterProfile";
-import { ValidateFileSender } from "../middlewares/ValidateFileSend";
 
 const router = Router();
 
 router.get("/", StatusController.getStatus);
 
-router.delete("/deletar", VerifyToken, UserController.deleteUser);
+router.delete("/usuario/deletar", VerifyToken, UserController.deleteUser);
 
 router.put(
-  "/editar-conta",
+  "/usuario/editar",
   VerifyToken,
   JsonRequiredMiddleware,
   ValidateRequest(UserDTO, ["update"]),
@@ -23,24 +22,19 @@ router.put(
 );
 
 router.post(
-  "/enviar-perfil",
+  "/usuario/enviar-perfil",
   VerifyToken,
   imageProfileUpload.single("image"),
-  ValidateFileSender,
   UserController.setProfileImage
 );
 
 router.get(
-  "/imagem-perfil/:imageId",
+  "/usuario/perfil/:imageId",
   VerifyToken,
   UserController.getProfileImage
 );
 
-router.get(
-  "/meu-perfil",
-  VerifyToken,
-  UserController.getInfo
-);
+router.get("usuario/minha-conta", VerifyToken, UserController.getInfo);
 
 router.post(
   "/cadastrar",

@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { ErrorResponse } from "../@types/Responses/ErrorResponse"; // Verifique se ErrorResponse está implementado corretamente
+import { ErrorResponse } from "../@types/Responses/ErrorResponse";
 import logger from "../config/Logger";
 
 export function ErrorMiddleware(
@@ -10,10 +10,7 @@ export function ErrorMiddleware(
 ) {
   logger.error(err);
 
-  const errorMessage = err.message || "Erro interno do servidor";
-  const statusCode: number = err.status || 500;
+  const responseBody = ErrorResponse("Erro interno do servidor", 500);
 
-  const responseBody = ErrorResponse(errorMessage, statusCode);
-
-  res.status(statusCode).json(responseBody);
+  res.status(500).json(responseBody);
 }

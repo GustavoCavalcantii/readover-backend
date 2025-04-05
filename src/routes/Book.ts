@@ -1,15 +1,15 @@
 import { Router } from "express";
 import VerifyToken from "../middlewares/Auth";
 import imageBookUpload from "../config/MulterBook";
-import { ValidateFileSender } from "../middlewares/ValidateFileSend";
+import BookController from "../controllers/BookController";
 
 const router = Router();
 
 router.post(
-  "/enviar-livro",
+  "/imagem",
   VerifyToken,
   imageBookUpload.single("image"),
-  ValidateFileSender
+  BookController.store
 );
 
 export default router;
