@@ -1,4 +1,4 @@
-import { Document, Double } from "mongoose";
+import { Document } from "mongoose";
 
 export interface IBook extends Document {
     id: number;
