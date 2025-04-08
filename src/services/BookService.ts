@@ -1,25 +1,19 @@
+import { isValidObjectId } from "mongoose";
+import { BookDTO } from "../dtos/BookDTO";
 import { IBook } from "../interfaces/IBook";
 import Book from "../models/Book";
-import { MongoServerError } from "mongodb";
+import { MongoServerError, ObjectId } from "mongodb";
 
 export class BookService {
-  async createBook(
-    title: string,
-    author: string,
-    isbn: string,
-    category: string,
-    description?: string,
-    linkPdf?: string,
-    quantityAvailable: number = 1
-  ): Promise<IBook> {
+  async createBook(createBook: BookDTO): Promise<IBook> {
     const book = new Book({
-      title,
-      author,
-      isbn,
-      category,
-      description,
-      linkPdf,
-      quantityAvailable,
+      title: createBook.title,
+      author: createBook.author,
+      isbn: createBook.isbn,
+      category: createBook.category,  
+      description: createBook.description,
+      linkPdf: createBook.linkPdf,
+      quantityAvailable: createBook.quantityAvailable,
     });
   
     try {
@@ -62,14 +56,67 @@ export class BookService {
     return await Book.find();
   }
   
-  async updateBook(id: string, data: Partial<IBook>): Promise<IBook | null> {
-    return await Book.findByIdAndUpdate(id, data, { new: true });
+  async updateBook(id: string, bookData: BookDTO): Promise<IBook | null> {
+    if (!ObjectId.isValid(id)) {
+      throw new Error("ID inválido.");
+    }
+  
+    const existingBook = await Book.findById(id);
+    if (!existingBook) {
+      throw new Error("Livro não encontrado.");
+    }
+  
+    const allowedFields = [
+      "title",
+      "author",
+      "isbn",
+      "category",
+      "description",
+      "linkPdf",
+      "quantityAvailable",
+    ];
+  
+    const filteredBookData = Object.fromEntries(
+      Object.entries(bookData).filter(
+        ([key, value]) => allowedFields.includes(key) && value !== undefined
+      )
+    ) as Partial<BookDTO>;
+  
+    if (Object.keys(filteredBookData).length === 0) {
+      throw new Error("Nenhuma alteração válida detectada.");
+    }
+  
+    const isDataEqual = Object.keys(filteredBookData).every(
+      (key) =>
+        filteredBookData[key as keyof BookDTO] ===
+        existingBook[key as keyof IBook]
+    );
+  
+    if (isDataEqual) {
+      throw new Error("Nenhuma alteração detectada. Os dados são iguais.");
+    }
+  
+    const updatedBook = await Book.findByIdAndUpdate(id, filteredBookData, {
+      new: true,
+    });
+  
+    return updatedBook;
   }
   
+  
   async deleteBook(id: string): Promise<boolean> {
-    const result = await Book.findByIdAndDelete(id);
-    return !!result;
-  }
+    if (!ObjectId.isValid(id)) {
+      throw new Error("ID inválido.");
+    }
+  
+    const book = await Book.findByIdAndDelete(id);
+  
+    if (!book) {
+      throw new Error("Livro não encontrado.");
+    }
+  
+    return true;
+  }  
 }
 
 export default new BookService();
