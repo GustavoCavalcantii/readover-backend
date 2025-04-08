@@ -6,7 +6,7 @@ import { BookStatus } from "../enums/Book/BookStatus";
 const loanSchema = new Schema<ILoan>({
   userId: { type: Types.ObjectId, required: true, ref: "User" },
   bookId: { type: Types.ObjectId, required: true, ref: "Book" },
-  status: { type: String, default: BookStatus.ACTIVE },
+  status: { type: String, enum: Object.values(BookStatus), default: BookStatus.PENDING },
   loanDate: { type: Date, required: true, default: Date.now },
   expectedReturnDate: {
     type: Date,
@@ -17,7 +17,8 @@ const loanSchema = new Schema<ILoan>({
       return today;
     },
   },
-  actualReturnDate: { type: Date, required: true },
+  actualReturnDate: { type: Date, required: false, default: null },
+}, {
 });
 
 const Loan = mongoose.model<ILoan>("Loan", loanSchema);

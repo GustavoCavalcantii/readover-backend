@@ -9,6 +9,7 @@ import UserRouter from "./routes/User";
 import AuthRouter from "./routes/Auth";
 import AdminRouter from "./routes/Admin";
 import BookRouter from "./routes/Book";
+import LoanRouter from "./routes/Loan";
 import EmailRouter from "./routes/Email";
 import { ErrorMiddleware } from "./middlewares/Error";
 import { ValidateRoles } from "./middlewares/Roles";
@@ -34,9 +35,10 @@ app.use(MaintenanceMiddleware);
   ROTAS
 */
 app.use(UserRouter);
-app.use("/livro", BookRouter);
+app.use("/livro", VerifyToken, BookRouter);
 app.use(AuthRouter);
 app.use(EmailRouter);
+app.use("/emprestimo", VerifyToken, LoanRouter);
 app.use("/admin", VerifyToken, ValidateRoles(Roles.ADMIN), AdminRouter);
 
 app.use(ErrorMiddleware);

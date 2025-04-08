@@ -8,5 +8,5 @@ export interface ILoan extends Document {
   status: BookStatus;
   loanDate: Date;
   expectedReturnDate: Date;
-  actualReturnDate: Date;
+  actualReturnDate?: Date;
 }
