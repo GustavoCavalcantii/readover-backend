@@ -29,12 +29,18 @@ router.post(
 );
 
 router.get(
+  "/usuario/notificacoes",
+  VerifyToken,
+  UserController.getNotification
+);
+
+router.get(
   "/usuario/perfil/:imageId",
   VerifyToken,
   UserController.getProfileImage
 );
 
-router.get("usuario/minha-conta", VerifyToken, UserController.getInfo);
+router.get("/usuario/minha-conta", VerifyToken, UserController.getInfo);
 
 router.post(
   "/cadastrar",

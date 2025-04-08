@@ -5,6 +5,9 @@ import { ValidateRequest } from "../middlewares/ValidateRequest";
 import imageBookUpload from "../config/MulterBook";
 import BookController from "../controllers/BookController";
 import { BookDTO } from "../dtos/BookDTO";
+import { ValidateRoles } from "../middlewares/Roles";
+import { Roles } from "../enums/User/UserRole";
+
 
 const router = Router();
 
@@ -29,6 +32,8 @@ router.get("/:id",
 
 router.post(
   "/imagem",
+  VerifyToken,
+  ValidateRoles(Roles.ADMIN),
   imageBookUpload.single("image"),
   BookController.store
 );

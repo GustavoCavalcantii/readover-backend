@@ -11,6 +11,9 @@ import { ConsultProfile } from "../dtos/ConsultProfile";
 import ImageService from "../services/ImageService";
 import { ImageTypes } from "../enums/Image/ImageTypes";
 import { ISecureUser } from "../interfaces/ISecureUser";
+import NotificationService from "../services/NotificationService";
+import LoanService from "../services/LoanService";
+import BookService from "../services/BookService";
 
 class UserController {
   static async register(req: Request, res: Response) {
@@ -193,14 +196,15 @@ class UserController {
         return;
       }
 
-      const activeLoans = await userService.getActiveLoansName(user.id);
+      const loansName = await LoanService.getLoansNameByUser(user.id);
 
       const payload: ISecureUser = {
         username: user.username,
         email: user.email,
         grade: user.grade,
         profileImage: user.profileImage,
-        activeLoans: activeLoans,
+        ...(Array.isArray(loansName) &&
+          loansName.length > 0 && { activeLoans: loansName }),
       };
 
       res
@@ -215,6 +219,43 @@ class UserController {
     } catch (error) {
       logger.error("Erro ao deletar usuário", error);
       res.status(500).json(ErrorResponse("Erro ao deletar usuário", 500));
+    }
+  }
+
+  static async getNotification(req: Request, res: Response) {
+    try {
+      const loggedInUser = req.user as IUser;
+
+      if (!loggedInUser) {
+        res.status(401).json(ErrorResponse("Usuário não autenticado.", 401));
+        return;
+      }
+
+      const notifications = await NotificationService.getAllNotification(
+        loggedInUser.id
+      );
+
+      if (!notifications || notifications.length === 0) {
+        res
+          .status(200)
+          .json(SuccessResponse(null, "Nenhuma notificação encontrada", 200));
+        return;
+      }
+
+      res
+        .status(200)
+        .json(
+          SuccessResponse(
+            notifications,
+            "Notificações consultadas com sucesso",
+            200
+          )
+        );
+    } catch (error) {
+      logger.error("Erro ao consultar as notificações", error);
+      res
+        .status(500)
+        .json(ErrorResponse("Erro ao consultar as notificações", 500));
     }
   }
 
