@@ -2,6 +2,8 @@ import { Router } from "express";
 import VerifyToken from "../middlewares/Auth";
 import imageBookUpload from "../config/MulterBook";
 import BookController from "../controllers/BookController";
+import { ValidateRoles } from "../middlewares/Roles";
+import { Roles } from "../enums/User/UserRole";
 
 const router = Router();
 
@@ -12,6 +14,7 @@ router.delete("/:id", BookController.delete);
 router.post(
   "/imagem",
   VerifyToken,
+  ValidateRoles(Roles.ADMIN),
   imageBookUpload.single("image"),
   BookController.store
 );

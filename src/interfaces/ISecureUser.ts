@@ -3,5 +3,5 @@ export interface ISecureUser {
   email: string;
   grade?: string;
   profileImage: String | null;
-  activeLoans: String[] | null;
+  activeLoans?: String[] | null;
 }

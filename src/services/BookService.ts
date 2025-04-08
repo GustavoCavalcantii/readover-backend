@@ -1,6 +1,5 @@
 import { IBook } from "../interfaces/IBook";
 import Book from "../models/Book";
-import { MongoServerError } from "mongodb";
 
 export class BookService {
   async createBook(
