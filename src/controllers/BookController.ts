@@ -8,6 +8,7 @@ import BookService from "../services/BookService";
 import logger from "../config/Logger";
 import { link } from "fs";
 import { IBook } from "../interfaces/IBook";
+import path from "path";
 
 class BookController {
 
@@ -56,7 +57,8 @@ class BookController {
         quantityAvailable: book.quantityAvailable,
         description: book.description,
         category: book.category,
-        linkPdf: book.linkPdf
+        linkPdf: book.linkPdf,
+        image: book.image,
       }
 
       res
@@ -92,6 +94,7 @@ class BookController {
         description: book.description,
         category: book.category,
         linkPdf: book.linkPdf,
+        image: book.image,
       }));
 
       res
@@ -128,7 +131,8 @@ class BookController {
         quantityAvailable: updatedBook.quantityAvailable,
         description: updatedBook.description,
         category: updatedBook.category,
-        linkPdf: updatedBook.linkPdf
+        linkPdf: updatedBook.linkPdf,
+        image: updatedBook.image,
       };
   
       res
@@ -174,13 +178,45 @@ class BookController {
       res.status(400).json(ErrorResponse("Nenhum arquivo enviado.", 400));
       return;
     }
+    
 
-    //TODO: Salvar no banco de dados
+    const { id } = req.params;
 
-    res
-      .status(200)
-      .json(SuccessResponse(null, "Arquivo enviado com sucesso!", 200));
+    const imagePath = path.resolve(req.file.path);
+
+    try {
+      await BookService.setImageOfBook(id, imagePath);
+
+      res.status(200).json(SuccessResponse(null, "Arquivo enviado com sucesso!", 200));
+    } 
+    catch (error: any) {
+      logger.error("Erro ao salvar imagem:", error);
+      res.status(400).json(ErrorResponse(error.message || "Erro ao salvar imagem", 400));
+    }
   }
+
+  static async getBookImage(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const imageUrl = await BookService.getImageOfBook(id);
+  
+      if (!imageUrl) {
+        res.status(404).json(ErrorResponse("Imagem não encontrada", 404));
+        return;
+      }
+  
+      res
+        .status(200)
+        .sendFile(imageUrl);
+    } 
+    catch (error) {
+      logger.error("Erro ao obter imagem do livro:", error);
+
+      res
+        .status(500)
+        .json(ErrorResponse("Erro Interno no Servidor.", 500));
+    }
+  };
 }
 
 export default BookController;

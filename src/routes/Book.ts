@@ -31,11 +31,14 @@ router.get("/:id",
   BookController.getById);
 
 router.post(
-  "/imagem",
-  VerifyToken,
-  ValidateRoles(Roles.ADMIN),
+  "/imagem/:id",
   imageBookUpload.single("image"),
   BookController.store
+);
+
+router.get(
+  "/imagem/:id",
+  BookController.getBookImage
 );
 
 export default router;

@@ -9,6 +9,7 @@ const bookSchema = new Schema<IBook>({
     description: { type: String },
     category: { type: String, required: true },
     linkPdf: { type: String, unique: true },
+    image: { type: String },
   }, {
     timestamps: true
   });

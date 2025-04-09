@@ -100,50 +100,6 @@ export class LoanService {
     // TODO: enviar e-mail e notificação 0_0
     return loan;
   }
-
-  public async getLoanByUser(userId: string): Promise<ILoan | null> {
-    const loan = await Loan.findOne({ userId });
-    return loan;
-  }
-
-  public async getLoansByUser(userId: string): Promise<ILoan[] | null> {
-    const loans = await Loan.find({ userId });
-    return loans;
-  }
-
-  public async getLoansNameByUser(userId: string): Promise<string[] | null> {
-    const activeLoans = await this.getLoansByUser(userId);
-    let loansName = [];
-
-    if (activeLoans && activeLoans.length > 0) {
-      for (const element of activeLoans) {
-        const book = await BookService.getBookById(element.bookId.toString());
-        if (book) loansName.push(book.title);
-      }
-    }
-
-    return loansName;
-  }
-
-  public async setExpired(): Promise<ILoan[]> {
-    const now = new Date();
-
-    const expiredLoans = await Loan.find({
-      expectedReturnDate: { $lt: now },
-    });
-
-    expiredLoans.forEach((element) => {
-      element.status = BookStatus.LATE;
-      element.save();
-    });
-
-    return expiredLoans;
-  }
-
-  public async getLoanByBook(bookId: string): Promise<ILoan | null> {
-    const loan = await Loan.findOne({ bookId });
-    return loan;
-  }
 }
 
 export default new LoanService();

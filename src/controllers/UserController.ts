@@ -14,6 +14,7 @@ import { ISecureUser } from "../interfaces/ISecureUser";
 import NotificationService from "../services/NotificationService";
 import LoanService from "../services/LoanService";
 import BookService from "../services/BookService";
+import { isDataURI } from "class-validator";
 
 class UserController {
   static async register(req: Request, res: Response) {
@@ -43,6 +44,7 @@ class UserController {
         }
 
         const response = {
+          id: existingUser.id,
           username: existingUser.username,
           email: existingUser.email,
         };
@@ -59,6 +61,7 @@ class UserController {
       logger.info(`Usuário ${user.username} criado.`);
 
       const response = {
+        id: user.id,
         username: user.username,
         email: user.email,
       };
@@ -93,6 +96,7 @@ class UserController {
       }
 
       const response = {
+        id: updatedUser.id,
         username: updatedUser.username,
         email: updatedUser.email,
       };
@@ -199,6 +203,7 @@ class UserController {
       const loansName = await LoanService.getLoansNameByUser(user.id);
 
       const payload: ISecureUser = {
+        id: user.id,
         username: user.username,
         email: user.email,
         grade: user.grade,

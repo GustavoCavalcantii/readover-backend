@@ -41,6 +41,7 @@ class AuthController {
     });
 
     const response = {
+      id: user.id,
       username: user.username,
       email: user.email,
       token: accessToken,
@@ -184,6 +185,7 @@ class AuthController {
       }
 
       const response = {
+        id: updateUser.id,
         username: updateUser.username,
         email: updateUser.email,
       };

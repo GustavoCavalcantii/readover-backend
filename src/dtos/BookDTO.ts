@@ -67,4 +67,10 @@ export class BookDTO {
         groups: ["create", "update"],
     })
     linkPdf: string;
+
+    @IsOptional({ groups: ["update", "create"] })
+    @IsString({ 
+        groups: ["create", "update"], 
+        message: "O link deve ser uma string" })
+    image: string;
 }

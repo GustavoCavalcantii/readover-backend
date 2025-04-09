@@ -1,4 +1,5 @@
 export interface ISecureUser {
+  id: string;
   username: string;
   email: string;
   grade?: string;

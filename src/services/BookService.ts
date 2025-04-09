@@ -15,6 +15,7 @@ export class BookService {
       description: createBook.description,
       linkPdf: createBook.linkPdf,
       quantityAvailable: createBook.quantityAvailable,
+      image: createBook.image,
     });
   
     try {
@@ -56,6 +57,36 @@ export class BookService {
   async getAllBooks(): Promise<IBook[]> {
     return await Book.find();
   }
+
+  async setImageOfBook(id: string, image: string): Promise<IBook | null> {
+    if (!ObjectId.isValid(id)) {
+      throw new Error("ID inválido.");
+    }
+  
+    const existingBook = await Book.findById(id);
+    if (!existingBook) {
+      throw new Error("Livro não encontrado.");
+    }
+  
+    if (existingBook.image === image) {
+      throw new Error("A nova imagem é igual à atual.");
+    }
+  
+    const updatedBook = await Book.findByIdAndUpdate(
+      id,
+      { image },
+      { new: true }
+    );
+  
+    return updatedBook;
+  }
+  
+  async getImageOfBook(id: string): Promise<string | null> {
+    const book = await Book.findById(id);
+    if (!book) throw new Error("Livro não encontrado.");
+  
+    return book.image || null;
+  }
   
   async updateBook(id: string, bookData: BookDTO): Promise<IBook | null> {
     if (!ObjectId.isValid(id)) {
@@ -75,6 +106,7 @@ export class BookService {
       "description",
       "linkPdf",
       "quantityAvailable",
+      "image"
     ];
   
     const filteredBookData = Object.fromEntries(
