@@ -1,41 +1,45 @@
 import { Router } from "express";
-import VerifyToken from "../middlewares/Auth";
 import JsonRequiredMiddleware from "../middlewares/JsonRequired";
 import { ValidateRequest } from "../middlewares/ValidateRequest";
 import imageBookUpload from "../config/MulterBook";
 import BookController from "../controllers/BookController";
 import { BookDTO } from "../dtos/BookDTO";
-import { ValidateRoles } from "../middlewares/Roles";
-import { Roles } from "../enums/User/UserRole";
 
 
 const router = Router();
 
-router.get("/",
-  BookController.getAll);
+router.get("/filtrar", (req, res) => BookController.getAll(req, res));
 
-router.post("/",
-  JsonRequiredMiddleware,
-  ValidateRequest(BookDTO), 
-  BookController.create);
+router.get("/filtrar/:filter", (req, res) => BookController.getAll(req, res));
 
-router.put("/:id",
-  JsonRequiredMiddleware,
-  ValidateRequest(BookDTO),
-  BookController.update);
-
-router.delete("/:id",
-  BookController.delete);
-
-router.get("/:id",
-  BookController.getById);
+router.get("/categoria/:filter", (req, res) =>
+  BookController.getAll(req, res, true)
+);
 
 router.post(
-  "/imagem",
-  VerifyToken,
-  ValidateRoles(Roles.ADMIN),
+  "/",
+  JsonRequiredMiddleware,
+  ValidateRequest(BookDTO),
+  BookController.create
+);
+
+router.put(
+  "/:id",
+  JsonRequiredMiddleware,
+  ValidateRequest(BookDTO),
+  BookController.update
+);
+
+router.delete("/:id", BookController.delete);
+
+router.get("/:id", BookController.getById);
+
+router.post(
+  "/imagem/:id",
   imageBookUpload.single("image"),
   BookController.store
 );
+
+router.get("/imagem/:id", BookController.getBookImage);
 
 export default router;

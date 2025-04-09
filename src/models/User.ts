@@ -12,7 +12,6 @@ const userSchema = new Schema<IUser>(
     deleted: { type: Boolean, default: false },
     accessLevel: { type: String, default: Roles.USER, required: false },
     grade: { type: String, required: false },
-    activeLoans: { type: [Types.ObjectId], ref: "Loan" },
   },
   { timestamps: true }
 );

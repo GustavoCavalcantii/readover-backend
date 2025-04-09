@@ -32,7 +32,7 @@ class NotificationService {
       expectedReturnDate
     );
 
-    await EmailService.sendEmail(user.email, "Devolução atrasada", message);
+    await EmailService.sendLateLoanEmail(user.email, user.username, bookName, expectedReturnDate?.toString() || "");
 
     return notification;
   }

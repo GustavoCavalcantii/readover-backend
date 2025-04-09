@@ -1,15 +1,20 @@
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { ILoan } from "../interfaces/ILoan";
 import Loan from "../models/Loan";
 import Book from "../models/Book";
 import User from "../models/User";
 import { BookStatus } from "../enums/Book/BookStatus";
 import { LoanDTO } from "../dtos/LoanDTO";
+import BookService from "./BookService";
 
 export class LoanService {
-  async requestLoan(requestLoan: LoanDTO): Promise<ILoan> {
-    const { bookId, userId } = requestLoan;
+  async requestLoan(requestLoan: LoanDTO, userId: string): Promise<ILoan | null> {
+    const { bookId } = requestLoan;
 
+   if (!mongoose.Types.ObjectId.isValid(bookId)) {
+     return null;
+   }
+    
     const book = await Book.findById(bookId);
     if (!book) {
       throw new Error("Livro não encontrado.");
@@ -21,7 +26,9 @@ export class LoanService {
     });
 
     if (existingLoan) {
-      throw new Error("Este livro já está emprestado ou com solicitação pendente.");
+      throw new Error(
+        "Este livro já está emprestado ou com solicitação pendente."
+      );
     }
 
     const user = await User.findById(userId);
@@ -34,7 +41,9 @@ export class LoanService {
       bookId,
       status: BookStatus.PENDING,
       loanDate: new Date(),
-      expectedReturnDate: new Date(`${requestLoan.expectedReturnDate}T00:00:00`), // 30 dias
+      expectedReturnDate: new Date(
+        `${requestLoan.expectedReturnDate}T00:00:00`
+      ), // 30 dias
       actualReturnDate: undefined,
     });
 
@@ -45,8 +54,14 @@ export class LoanService {
     return loan;
   }
 
-  async approveLoan(loanId: string): Promise<ILoan> {
-    const loan = await Loan.findById(loanId).populate("userId").populate("bookId");
+  async approveLoan(loanId: string): Promise<ILoan | null> {
+    if (!mongoose.Types.ObjectId.isValid(loanId)) {
+      return null;
+    }
+
+    const loan = await Loan.findById(loanId)
+      .populate("userId")
+      .populate("bookId");
     if (!loan) throw new Error("Empréstimo não encontrado.");
 
     loan.status = BookStatus.ACTIVE;
@@ -60,8 +75,14 @@ export class LoanService {
     return loan;
   }
 
-  async rejectLoan(loanId: string): Promise<ILoan> {
-    const loan = await Loan.findById(loanId).populate("userId").populate("bookId");
+  async rejectLoan(loanId: string): Promise<ILoan | null> {
+    if (!mongoose.Types.ObjectId.isValid(loanId)) {
+      return null;
+    }
+
+    const loan = await Loan.findById(loanId)
+      .populate("userId")
+      .populate("bookId");
     if (!loan) throw new Error("Empréstimo não encontrado.");
 
     loan.status = BookStatus.REJECTED;
@@ -72,19 +93,65 @@ export class LoanService {
   }
 
   async getPendingLoans(): Promise<ILoan[]> {
-    return await Loan.find({ status: BookStatus.PENDING }).populate("userId").populate("bookId");
+    return await Loan.find({ status: BookStatus.PENDING })
+      .populate("userId")
+      .populate("bookId");
   }
 
   async getLoanByUser(userId: string): Promise<ILoan | null> {
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return null;
+    }
+
     return await Loan.findOne({ userId });
   }
 
+  async getLoansByUser(userId: string): Promise<ILoan[] | null> {
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return null;
+    }
+
+    return await Loan.find({ userId });
+  }
+
   async getLoanByBook(bookId: string): Promise<ILoan | null> {
+    if (!mongoose.Types.ObjectId.isValid(bookId)) {
+      return null;
+    }
+
     return await Loan.findOne({ bookId });
   }
 
-  async returnBook(loanId: string): Promise<ILoan> {
-    const loan = await Loan.findById(loanId).populate("userId").populate("bookId");
+  async getLoansNameByUser(userId: string): Promise<string[]> {
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return [];
+    }
+
+    const allLoans = await this.getLoansByUser(userId);
+    if (!allLoans) return [];
+
+    const activeLoans = allLoans.filter(
+      (loan) => loan.status !== BookStatus.RETURNED
+    );
+
+    const bookTitles = await Promise.all(
+      activeLoans.map(async (loan) => {
+        const book = await BookService.getBookById(loan.bookId.toString());
+        return book ? book.title : null;
+      })
+    );
+
+    return bookTitles.filter((title): title is string => title !== null);
+  }
+
+  async returnBook(loanId: string): Promise<ILoan | null> {
+    if (!mongoose.Types.ObjectId.isValid(loanId)) {
+      return null;
+    }
+
+    const loan = await Loan.findById(loanId)
+      .populate("userId")
+      .populate("bookId");
     if (!loan) throw new Error("Empréstimo não encontrado.");
 
     const now = new Date();
@@ -98,50 +165,6 @@ export class LoanService {
     await loan.save();
 
     // TODO: enviar e-mail e notificação 0_0
-    return loan;
-  }
-
-  public async getLoanByUser(userId: string): Promise<ILoan | null> {
-    const loan = await Loan.findOne({ userId });
-    return loan;
-  }
-
-  public async getLoansByUser(userId: string): Promise<ILoan[] | null> {
-    const loans = await Loan.find({ userId });
-    return loans;
-  }
-
-  public async getLoansNameByUser(userId: string): Promise<string[] | null> {
-    const activeLoans = await this.getLoansByUser(userId);
-    let loansName = [];
-
-    if (activeLoans && activeLoans.length > 0) {
-      for (const element of activeLoans) {
-        const book = await BookService.getBookById(element.bookId.toString());
-        if (book) loansName.push(book.title);
-      }
-    }
-
-    return loansName;
-  }
-
-  public async setExpired(): Promise<ILoan[]> {
-    const now = new Date();
-
-    const expiredLoans = await Loan.find({
-      expectedReturnDate: { $lt: now },
-    });
-
-    expiredLoans.forEach((element) => {
-      element.status = BookStatus.LATE;
-      element.save();
-    });
-
-    return expiredLoans;
-  }
-
-  public async getLoanByBook(bookId: string): Promise<ILoan | null> {
-    const loan = await Loan.findOne({ bookId });
     return loan;
   }
 }
