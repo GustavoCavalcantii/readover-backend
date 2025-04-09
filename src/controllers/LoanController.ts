@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import { ErrorResponse } from "../@types/Responses/ErrorResponse";
 import { SuccessResponse } from "../@types/Responses/SuccessResponse";
 import { plainToInstance } from "class-transformer";
-import { validate } from "class-validator";
 import { LoanDTO } from "../dtos/LoanDTO";
 import LoanService from "../services/LoanService";
 import logger from "../config/Logger";
@@ -278,6 +277,7 @@ class LoanController {
                 .json(ErrorResponse("Erro ao devolver livro", 400));
         }
     }
+  }
 }
 
 export default new LoanController();

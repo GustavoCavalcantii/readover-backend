@@ -2,38 +2,37 @@ import { Request, Response } from "express";
 import { ErrorResponse } from "../@types/Responses/ErrorResponse";
 import { SuccessResponse } from "../@types/Responses/SuccessResponse";
 import { plainToInstance } from "class-transformer";
-import { validate } from "class-validator";
 import { BookDTO } from "../dtos/BookDTO";
 import BookService from "../services/BookService";
 import logger from "../config/Logger";
-import { link } from "fs";
-import { IBook } from "../interfaces/IBook";
 import path from "path";
 
 class BookController {
-
   static async create(req: Request, res: Response) {
     try {
-
       const createBookDto = plainToInstance(BookDTO, req.body);
 
+      const alredyExists = await BookService.getBookByIsbn(createBookDto.isbn);
+
+      if (alredyExists) {
+        res.status(400).json(ErrorResponse("Este livro já foi cadastrado", 400));
+        return;
+      }
+
       const book = await BookService.createBook(createBookDto);
-      
+
       const response = {
         id: book._id,
         title: book.title,
         autor: book.author,
-      }
+      };
 
       res
         .status(201)
         .json(SuccessResponse(response, "Livro criado com sucesso!", 201));
-    } 
-    catch (error) {
+    } catch (error) {
       logger.error("Erro ao criar livro", error);
-      res
-        .status(400)
-        .json(ErrorResponse("Erro ao criar livro", 400));
+      res.status(500).json(ErrorResponse("Erro ao criar livro", 500));
     }
   }
 
@@ -42,9 +41,7 @@ class BookController {
       const book = await BookService.getBookById(req.params.id);
 
       if (!book) {
-        res
-          .status(404)
-          .json(ErrorResponse("Livro não encontrado", 404));
+        res.status(404).json(ErrorResponse("Livro não encontrado", 404));
 
         return;
       }
@@ -59,29 +56,33 @@ class BookController {
         category: book.category,
         linkPdf: book.linkPdf,
         image: book.profileImage,
-      }
+      };
 
-      res
-        .status(200)
-        .json(SuccessResponse(response, "Livro encontrado", 200));
-    } 
-    catch (error) {
+      res.status(200).json(SuccessResponse(response, "Livro encontrado", 200));
+    } catch (error) {
       logger.error("Erro ao buscar livro", error);
 
-      res
-        .status(500)
-        .json(ErrorResponse("Erro ao buscar livro", 500));
+      res.status(500).json(ErrorResponse("Erro ao buscar livro", 500));
     }
   }
 
-  static async getAll(req: Request, res: Response) {
+  static async getAll(
+    req: Request,
+    res: Response,
+    isCategory: boolean = false
+  ) {
     try {
-      const books = await BookService.getAllBooks();
+      let { filter } = req.params;
 
-      if(!books || books.length === 0) {
-        res
-          .status(404)
-          .json(ErrorResponse("Nenhum livro encontrado", 404));
+      if (!filter) {
+        res.status(400).json(ErrorResponse("Filtro inválido", 400));
+        return;
+      }
+
+      const books = await BookService.getAllBooks(filter, isCategory);
+
+      if (!books || books.length === 0) {
+        res.status(404).json(ErrorResponse("Nenhum livro encontrado", 404));
         return;
       }
 
@@ -97,32 +98,25 @@ class BookController {
         image: book.profileImage,
       }));
 
-      res
-        .status(200)
-        .json(SuccessResponse(response, "Lista de livros", 200));
-    } 
-    catch (error) {
+      res.status(200).json(SuccessResponse(response, "Lista de livros", 200));
+    } catch (error) {
       logger.error("Erro ao listar livros", error);
 
-      res
-        .status(500)
-        .json(ErrorResponse("Erro ao listar livros", 500));
+      res.status(500).json(ErrorResponse("Erro ao listar livros", 500));
     }
   }
   static async update(req: Request, res: Response) {
     try {
       const idBook = req.params.id;
       const createBookDto = plainToInstance(BookDTO, req.body);
-  
+
       const updatedBook = await BookService.updateBook(idBook, createBookDto);
-  
+
       if (!updatedBook) {
-        res
-          .status(404)
-          .json(ErrorResponse("Livro não encontrado", 404));
+        res.status(404).json(ErrorResponse("Livro não encontrado", 404));
         return;
       }
-  
+
       const response = {
         id: updatedBook._id,
         title: updatedBook.title,
@@ -134,18 +128,15 @@ class BookController {
         linkPdf: updatedBook.linkPdf,
         image: updatedBook.profileImage,
       };
-  
+
       res
         .status(200)
         .json(SuccessResponse(response, "Livro atualizado com sucesso", 200));
     } catch (error) {
       logger.error("Erro ao atualizar livro", error);
-      res
-        .status(500)
-        .json(ErrorResponse("Erro ao atualizar livro", 500));
+      res.status(500).json(ErrorResponse("Erro ao atualizar livro", 500));
     }
   }
-  
 
   static async delete(req: Request, res: Response) {
     try {
@@ -153,23 +144,18 @@ class BookController {
 
       const deleted = await BookService.deleteBook(id);
 
-      if (!deleted) { 
-        res
-        .status(404)
-        .json(ErrorResponse("Livro não encontrado", 404));
+      if (!deleted) {
+        res.status(404).json(ErrorResponse("Livro não encontrado", 404));
         return;
       }
 
       res
         .status(200)
         .json(SuccessResponse(null, "Livro excluído com sucesso", 200));
-    } 
-    catch (error) {
+    } catch (error) {
       logger.error("Erro ao deletar livro", error);
 
-      res
-        .status(500)
-        .json(ErrorResponse("Erro ao deletar livro", 500));
+      res.status(500).json(ErrorResponse("Erro ao deletar livro", 500));
     }
   }
 
@@ -178,7 +164,6 @@ class BookController {
       res.status(400).json(ErrorResponse("Nenhum arquivo enviado.", 400));
       return;
     }
-    
 
     const { id } = req.params;
 
@@ -187,11 +172,14 @@ class BookController {
     try {
       await BookService.setImageOfBook(id, imagePath);
 
-      res.status(200).json(SuccessResponse(null, "Arquivo enviado com sucesso!", 200));
-    } 
-    catch (error: any) {
+      res
+        .status(200)
+        .json(SuccessResponse(null, "Arquivo enviado com sucesso!", 200));
+    } catch (error: any) {
       logger.error("Erro ao salvar imagem:", error);
-      res.status(400).json(ErrorResponse(error.message || "Erro ao salvar imagem", 400));
+      res
+        .status(400)
+        .json(ErrorResponse(error.message || "Erro ao salvar imagem", 400));
     }
   }
 
@@ -199,24 +187,19 @@ class BookController {
     try {
       const { id } = req.params;
       const imageUrl = await BookService.getImageOfBook(id);
-  
+
       if (!imageUrl) {
         res.status(404).json(ErrorResponse("Imagem não encontrada", 404));
         return;
       }
-  
-      res
-        .status(200)
-        .sendFile(imageUrl);
-    } 
-    catch (error) {
+
+      res.status(200).sendFile(imageUrl);
+    } catch (error) {
       logger.error("Erro ao obter imagem do livro:", error);
 
-      res
-        .status(500)
-        .json(ErrorResponse("Erro Interno no Servidor.", 500));
+      res.status(500).json(ErrorResponse("Erro Interno no Servidor.", 500));
     }
-  };
+  }
 }
 
 export default BookController;

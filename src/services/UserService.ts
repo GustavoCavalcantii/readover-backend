@@ -9,6 +9,7 @@ import bcrypt from "bcryptjs";
 import { ISecureUser } from "../interfaces/ISecureUser";
 import { Roles } from "../enums/User/UserRole";
 import LoanService from "./LoanService";
+import mongoose from "mongoose";
 
 dotenv.config();
 
@@ -130,7 +131,7 @@ class UserService {
 
   async getAllUsersExcept(id: string): Promise<IUser[] | null> {
     const users = await User.find({ _id: { $ne: id } });
-    return users;    
+    return users;
   }
 
   async getUserProfileImage(id: string): Promise<string> {
@@ -180,6 +181,10 @@ class UserService {
   }
 
   async getUserById(id: string): Promise<IUser | null> {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return null;
+    }
+    
     return await User.findById(id);
   }
 }
