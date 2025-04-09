@@ -85,8 +85,8 @@ export class BookService {
     if (!existingBook) {
       throw new Error("Livro não encontrado.");
     }
-
-    if (existingBook.image === image) {
+  
+    if (existingBook.profileImage === image) {
       throw new Error("A nova imagem é igual à atual.");
     }
 
@@ -102,8 +102,8 @@ export class BookService {
   async getImageOfBook(id: string): Promise<string | null> {
     const book = await Book.findById(id);
     if (!book) throw new Error("Livro não encontrado.");
-
-    return book.image || null;
+  
+    return book.profileImage || null;
   }
 
   async updateBook(id: string, bookData: BookDTO): Promise<IBook | null> {
