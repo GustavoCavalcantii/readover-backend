@@ -58,7 +58,7 @@ class BookController {
         description: book.description,
         category: book.category,
         linkPdf: book.linkPdf,
-        image: book.image,
+        image: book.profileImage,
       }
 
       res
@@ -94,7 +94,7 @@ class BookController {
         description: book.description,
         category: book.category,
         linkPdf: book.linkPdf,
-        image: book.image,
+        image: book.profileImage,
       }));
 
       res
@@ -132,7 +132,7 @@ class BookController {
         description: updatedBook.description,
         category: updatedBook.category,
         linkPdf: updatedBook.linkPdf,
-        image: updatedBook.image,
+        image: updatedBook.profileImage,
       };
   
       res

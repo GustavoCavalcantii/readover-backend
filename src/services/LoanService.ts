@@ -1,27 +1,27 @@
-import { Types } from "mongoose";
 import { ILoan } from "../interfaces/ILoan";
 import Loan from "../models/Loan";
 import Book from "../models/Book";
 import User from "../models/User";
 import { BookStatus } from "../enums/Book/BookStatus";
 import { LoanDTO } from "../dtos/LoanDTO";
+import NotificationService from "./NotificationService";
 
 export class LoanService {
-  async requestLoan(requestLoan: LoanDTO): Promise<ILoan> {
-    const { bookId, userId } = requestLoan;
+  async requestLoan(requestLoan: LoanDTO, userId: string): Promise<ILoan> {
+    const { bookId } = requestLoan;
 
     const book = await Book.findById(bookId);
     if (!book) {
       throw new Error("Livro não encontrado.");
     }
 
-    const existingLoan = await Loan.findOne({
+    const activeLoans = await Loan.countDocuments({
       bookId,
       status: { $in: [BookStatus.ACTIVE, BookStatus.PENDING] },
     });
-
-    if (existingLoan) {
-      throw new Error("Este livro já está emprestado ou com solicitação pendente.");
+    
+    if (activeLoans >= book.quantityAvailable) {
+      throw new Error("Todas as cópias deste livro estão emprestadas ou com solicitação pendente.");
     }
 
     const user = await User.findById(userId);
@@ -34,70 +34,129 @@ export class LoanService {
       bookId,
       status: BookStatus.PENDING,
       loanDate: new Date(),
-      expectedReturnDate: new Date(`${requestLoan.expectedReturnDate}T00:00:00`), // 30 dias
+      expectedReturnDate: new Date(`${requestLoan.expectedReturnDate}T00:00:00`),
       actualReturnDate: undefined,
     });
 
     await loan.save();
 
-    // TODO: enviar e-mail e notificação 0_0
-
-    return loan;
+  const populatedLoan = await Loan.findById(loan._id)
+    .populate("userId", "username email profileImage")
+    .populate("bookId", "title author isbn quantityAvailable category");
+  
+  // Notificar solicitação de empréstimo
+  await NotificationService.notifyLoanRequested(user, book, loan.expectedReturnDate);
+  
+  return populatedLoan as ILoan;
   }
 
   async approveLoan(loanId: string): Promise<ILoan> {
-    const loan = await Loan.findById(loanId).populate("userId").populate("bookId");
+    const loan = await Loan.findById(loanId)
+      .populate("userId", "username email profileImage")
+      .populate("bookId", "title author isbn quantityAvailable category");
+
     if (!loan) throw new Error("Empréstimo não encontrado.");
 
     loan.status = BookStatus.ACTIVE;
     loan.loanDate = new Date();
-    loan.expectedReturnDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 dias
+    loan.expectedReturnDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
     loan.actualReturnDate = undefined;
+
+    if (loan.bookId instanceof Book) {
+      loan.bookId.quantityLoaned += 1;
+      await loan.bookId.save();
+    } else {
+      const book = await Book.findById(loan.bookId);
+      if (book) {
+        book.quantityLoaned += 1;
+        await book.save();
+      }
+    }
 
     await loan.save();
 
-    // TODO: enviar e-mail e notificação 0_0
+    const user = loan.userId as any;
+    const book = loan.bookId as any;
+
+    // Notificar aprovação
+    await NotificationService.notifyLoanApproved(user, book, loan.expectedReturnDate);
+
     return loan;
   }
 
   async rejectLoan(loanId: string): Promise<ILoan> {
-    const loan = await Loan.findById(loanId).populate("userId").populate("bookId");
+    const loan = await Loan.findById(loanId)
+      .populate("userId", "username email profileImage")
+      .populate("bookId", "title author isbn quantityAvailable category");
+
     if (!loan) throw new Error("Empréstimo não encontrado.");
 
     loan.status = BookStatus.REJECTED;
+
     await loan.save();
 
-    // TODO: enviar e-mail e notificação 0_0
+    const user = loan.userId as any;
+    const book = loan.bookId as any;
+
+    // Notificar rejeição
+    await NotificationService.notifyLoanRejected(user, book);
+
     return loan;
   }
 
   async getPendingLoans(): Promise<ILoan[]> {
-    return await Loan.find({ status: BookStatus.PENDING }).populate("userId").populate("bookId");
+    return await Loan.find({ status: BookStatus.PENDING })
+      .populate("userId", "username email profileImage")
+      .populate("bookId", "title author quantityAvailable isbn");
   }
 
   async getLoanByUser(userId: string): Promise<ILoan | null> {
-    return await Loan.findOne({ userId });
+    return await Loan.findOne({ userId })
+      .populate("userId", "username email profileImage")
+      .populate("bookId", "title author isbn quantityAvailable category");
   }
 
   async getLoanByBook(bookId: string): Promise<ILoan | null> {
-    return await Loan.findOne({ bookId });
+    return await Loan.findOne({ bookId })
+      .populate("userId", "username email profileImage")
+      .populate("bookId", "title author isbn quantityAvailable category");;
   }
 
   async returnBook(loanId: string): Promise<ILoan> {
-    const loan = await Loan.findById(loanId).populate("userId").populate("bookId");
+    const loan = await Loan.findById(loanId)
+      .populate("userId", "username email profileImage")
+      .populate("bookId", "title author isbn quantityAvailable category");
+  
     if (!loan) throw new Error("Empréstimo não encontrado.");
-
+  
     const now = new Date();
     loan.actualReturnDate = now;
-
+  
     loan.status =
       loan.expectedReturnDate && now > loan.expectedReturnDate
         ? BookStatus.LATE
         : BookStatus.RETURNED;
-
+  
     await loan.save();
-
-    // TODO: enviar e-mail e notificação 0_0
+  
+    // Atualizar quantidade disponível
+    if (loan.bookId instanceof Book) {
+      loan.bookId.quantityLoaned = Math.max(loan.bookId.quantityLoaned - 1, 0);
+      await loan.bookId.save();
+    } else {
+      const book = await Book.findById(loan.bookId);
+      if (book) {
+        book.quantityLoaned = Math.max(book.quantityLoaned - 1, 0);
+        await book.save();
+      }
+    }
+  
+    const user = loan.userId as any;
+    const book = loan.bookId as any;
+  
+    // Notificar devolução
+    await NotificationService.notifyBookReturned(user, book, now);
+  
     return loan;
   }
 }

@@ -6,6 +6,7 @@ import { validate } from "class-validator";
 import { LoanDTO } from "../dtos/LoanDTO";
 import LoanService from "../services/LoanService";
 import logger from "../config/Logger";
+import { IUser } from "../interfaces/IUser";
 import { link } from "fs";
 import { IBook } from "../interfaces/IBook";
 import Loan from "../models/Loan";
@@ -15,17 +16,33 @@ class LoanController {
     async requestLoan(req: Request, res: Response) {
         try{
             const requestLoanDto = plainToInstance(LoanDTO, req.body);
-            const loan = await LoanService.requestLoan(requestLoanDto);
+
+            const loggedUser = req.user as unknown as IUser;
+            if(!loggedUser) {
+                res.status(401).json(ErrorResponse("Usuário não autenticado", 401));
+                return;
+            }
+
+            const loan = await LoanService.requestLoan(requestLoanDto, loggedUser._id as string);
 
             const response = {
+                user: {
+                    id: (loan.userId as any)._id,
+                    email: (loan.userId as any).email,
+                    username: (loan.userId as any).username
+                },
+                book: {
+                    id: (loan.bookId as any)._id,
+                    title: (loan.bookId as any).title,
+                    author: (loan.bookId as any).author,
+                    isbn: (loan.bookId as any).isbn
+                },
                 id: loan._id,
-                userId: loan.userId,
-                bookId: loan.bookId,
                 status: loan.status,
                 loanDate: loan.loanDate,
                 expectedReturnDate: loan.expectedReturnDate,
                 actualReturnDate: loan.actualReturnDate
-            }
+            };
 
             res
                 .status(201)
@@ -44,14 +61,23 @@ class LoanController {
             const loan = await LoanService.approveLoan(req.params.id);
 
             const response = {
+                user: {
+                    id: (loan.userId as any)._id,
+                    email: (loan.userId as any).email,
+                    username: (loan.userId as any).username
+                },
+                book: {
+                    id: (loan.bookId as any)._id,
+                    title: (loan.bookId as any).title,
+                    author: (loan.bookId as any).author,
+                    isbn: (loan.bookId as any).isbn
+                },
                 id: loan._id,
-                userId: loan.userId,
-                bookId: loan.bookId,
                 status: loan.status,
                 loanDate: loan.loanDate,
                 expectedReturnDate: loan.expectedReturnDate,
                 actualReturnDate: loan.actualReturnDate
-            }
+            };
 
             res
                 .status(200)
@@ -70,9 +96,18 @@ class LoanController {
             const loan = await LoanService.rejectLoan(req.params.id);
 
             const response = {
+                user: {
+                    id: (loan.userId as any)._id,
+                    email: (loan.userId as any).email,
+                    username: (loan.userId as any).username
+                },
+                book: {
+                    id: (loan.bookId as any)._id,
+                    title: (loan.bookId as any).title,
+                    author: (loan.bookId as any).author,
+                    isbn: (loan.bookId as any).isbn
+                },
                 id: loan._id,
-                userId: loan.userId,
-                bookId: loan.bookId,
                 status: loan.status,
                 loanDate: loan.loanDate,
                 expectedReturnDate: loan.expectedReturnDate,
@@ -95,9 +130,18 @@ class LoanController {
             const loans = await LoanService.getPendingLoans();
 
             const response = loans.map(loan => ({
+                user: {
+                    id: (loan.userId as any)?._id,
+                    email: (loan.userId as any)?.email,
+                    username: (loan.userId as any)?.username
+                },
+                book: {
+                    id: (loan.bookId as any)?._id,
+                    title: (loan.bookId as any)?.title,
+                    author: (loan.bookId as any)?.author,
+                    isbn: (loan.bookId as any).isbn
+                },
                 id: loan._id,
-                userId: loan.userId,
-                bookId: loan.bookId,
                 status: loan.status,
                 loanDate: loan.loanDate,
                 expectedReturnDate: loan.expectedReturnDate,
@@ -132,9 +176,18 @@ class LoanController {
             }
 
             const response = {
+                user: {
+                    id: (loan.userId as any)._id,
+                    email: (loan.userId as any).email,
+                    username: (loan.userId as any).username
+                },
+                book: {
+                    id: (loan.bookId as any)._id,
+                    title: (loan.bookId as any).title,
+                    author: (loan.bookId as any).author,
+                    isbn: (loan.bookId as any).isbn
+                },
                 id: loan._id,
-                userId: loan.userId,
-                bookId: loan.bookId,
                 status: loan.status,
                 loanDate: loan.loanDate,
                 expectedReturnDate: loan.expectedReturnDate,
@@ -163,9 +216,18 @@ class LoanController {
             }
 
             const response = {
+                user: {
+                    id: (loan.userId as any)._id,
+                    email: (loan.userId as any).email,
+                    username: (loan.userId as any).username
+                },
+                book: {
+                    id: (loan.bookId as any)._id,
+                    title: (loan.bookId as any).title,
+                    author: (loan.bookId as any).author,
+                    isbn: (loan.bookId as any).isbn
+                },
                 id: loan._id,
-                userId: loan.userId,
-                bookId: loan.bookId,
                 status: loan.status,
                 loanDate: loan.loanDate,
                 expectedReturnDate: loan.expectedReturnDate,
@@ -188,9 +250,18 @@ class LoanController {
             const loan = await LoanService.returnBook(req.params.id);
 
             const response = {
+                user: {
+                    id: (loan.userId as any)._id,
+                    email: (loan.userId as any).email,
+                    username: (loan.userId as any).username
+                },
+                book: {
+                    id: (loan.bookId as any)._id,
+                    title: (loan.bookId as any).title,
+                    author: (loan.bookId as any).author,
+                    isbn: (loan.bookId as any).isbn
+                },
                 id: loan._id,
-                userId: loan.userId,
-                bookId: loan.bookId,
                 status: loan.status,
                 loanDate: loan.loanDate,
                 expectedReturnDate: loan.expectedReturnDate,

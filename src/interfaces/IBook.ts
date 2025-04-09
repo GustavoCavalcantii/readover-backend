@@ -9,6 +9,7 @@ export interface IBook extends Document {
     description: string;
     category: string;
     linkPdf: string;
-    image: string;
+    profileImage: string;
+    quantityLoaned: number;
   }
   
