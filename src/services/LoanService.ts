@@ -8,8 +8,8 @@ import { LoanDTO } from "../dtos/LoanDTO";
 import BookService from "./BookService";
 
 export class LoanService {
-  async requestLoan(requestLoan: LoanDTO): Promise<ILoan | null> {
-    const { bookId, userId } = requestLoan;
+  async requestLoan(requestLoan: LoanDTO, userId: string): Promise<ILoan | null> {
+    const { bookId } = requestLoan;
 
    if (!mongoose.Types.ObjectId.isValid(bookId)) {
      return null;

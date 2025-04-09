@@ -5,7 +5,6 @@ export class LoanDTO {
 
    id: string;
    bookId: string;
-   userId: string;
 
    @IsOptional({ groups: ["create"] }) 
    @IsEnum(BookStatus, {

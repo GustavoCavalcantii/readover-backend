@@ -5,12 +5,19 @@ import { plainToInstance } from "class-transformer";
 import { LoanDTO } from "../dtos/LoanDTO";
 import LoanService from "../services/LoanService";
 import logger from "../config/Logger";
+import { IUser } from "../interfaces/IUser";
 
 class LoanController {
   async requestLoan(req: Request, res: Response) {
     try {
+      const loggedInUser = req.user as IUser;
+      if (!loggedInUser) {
+        res.status(401).json(ErrorResponse("Usuário não autenticado.", 401));
+        return;
+      }
+
       const requestLoanDto = plainToInstance(LoanDTO, req.body);
-      const loan = await LoanService.requestLoan(requestLoanDto);
+      const loan = await LoanService.requestLoan(requestLoanDto, loggedInUser.id);
 
       if (!loan) {
         res.status(400).json(ErrorResponse("Empréstimo não encontrado", 400));
