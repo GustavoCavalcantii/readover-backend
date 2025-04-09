@@ -8,30 +8,33 @@ import { Roles } from "../enums/User/UserRole";
 
 const router = Router();
 
+router.post(
+  "/",
+  JsonRequiredMiddleware,
+  ValidateRequest(LoanDTO),
+  LoanController.requestLoan
+);
 
-router.post("/",
-    JsonRequiredMiddleware,
-    ValidateRequest(LoanDTO), 
-    LoanController.requestLoan);
+router.put(
+  "/aprovar/:id",
+  ValidateRoles(Roles.ADMIN),
+  LoanController.approveLoan
+);
 
-router.put("/aprovar/:id", 
-    ValidateRoles(Roles.ADMIN),
-    LoanController.approveLoan);
+router.put(
+  "/rejeitar/:id",
+  ValidateRoles(Roles.ADMIN),
+  LoanController.rejectLoan
+);
 
-router.put("/rejeitar/:id", 
-    ValidateRoles(Roles.ADMIN),
-    LoanController.rejectLoan);
+router.put("/retornar/:id", LoanController.returnBook);
 
-router.put("/retornar/:id", 
-    LoanController.returnBook);
+router.get("/pendentes", LoanController.getPendingLoans);
 
-router.get("/pendentes", 
-    LoanController.getPendingLoans);
+router.get("/meus-emprestimos", LoanController.getAllLoans);
 
-router.get("/usuario/:userId", 
-    LoanController.getLoanByUser);
+router.get("/usuario/:userId", LoanController.getLoanByUser);
 
-router.get("/livro/:bookId", 
-    LoanController.getLoanByBook);
+router.get("/livro/:bookId", LoanController.getLoanByBook);
 
 export default router;
