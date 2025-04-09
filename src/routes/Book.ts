@@ -8,27 +8,33 @@ import { BookDTO } from "../dtos/BookDTO";
 import { ValidateRoles } from "../middlewares/Roles";
 import { Roles } from "../enums/User/UserRole";
 
-
 const router = Router();
 
-router.get("/",
-  BookController.getAll);
+router.get("/filtrar", (req, res) => BookController.getAll(req, res));
 
-router.post("/",
-  JsonRequiredMiddleware,
-  ValidateRequest(BookDTO), 
-  BookController.create);
+router.get("/filtrar/:filter", (req, res) => BookController.getAll(req, res));
 
-router.put("/:id",
+router.get("/categoria/:filter", (req, res) =>
+  BookController.getAll(req, res, true)
+);
+
+router.post(
+  "/",
   JsonRequiredMiddleware,
   ValidateRequest(BookDTO),
-  BookController.update);
+  BookController.create
+);
 
-router.delete("/:id",
-  BookController.delete);
+router.put(
+  "/:id",
+  JsonRequiredMiddleware,
+  ValidateRequest(BookDTO),
+  BookController.update
+);
 
-router.get("/:id",
-  BookController.getById);
+router.delete("/:id", BookController.delete);
+
+router.get("/:id", BookController.getById);
 
 router.post(
   "/imagem/:id",
@@ -36,9 +42,6 @@ router.post(
   BookController.store
 );
 
-router.get(
-  "/imagem/:id",
-  BookController.getBookImage
-);
+router.get("/imagem/:id", BookController.getBookImage);
 
 export default router;
