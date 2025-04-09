@@ -1,4 +1,4 @@
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { ILoan } from "../interfaces/ILoan";
 import Loan from "../models/Loan";
 import Book from "../models/Book";
@@ -8,9 +8,13 @@ import { LoanDTO } from "../dtos/LoanDTO";
 import BookService from "./BookService";
 
 export class LoanService {
-  async requestLoan(requestLoan: LoanDTO): Promise<ILoan> {
+  async requestLoan(requestLoan: LoanDTO): Promise<ILoan | null> {
     const { bookId, userId } = requestLoan;
 
+   if (!mongoose.Types.ObjectId.isValid(bookId)) {
+     return null;
+   }
+    
     const book = await Book.findById(bookId);
     if (!book) {
       throw new Error("Livro não encontrado.");
@@ -50,7 +54,11 @@ export class LoanService {
     return loan;
   }
 
-  async approveLoan(loanId: string): Promise<ILoan> {
+  async approveLoan(loanId: string): Promise<ILoan | null> {
+    if (!mongoose.Types.ObjectId.isValid(loanId)) {
+      return null;
+    }
+
     const loan = await Loan.findById(loanId)
       .populate("userId")
       .populate("bookId");
@@ -67,7 +75,11 @@ export class LoanService {
     return loan;
   }
 
-  async rejectLoan(loanId: string): Promise<ILoan> {
+  async rejectLoan(loanId: string): Promise<ILoan | null> {
+    if (!mongoose.Types.ObjectId.isValid(loanId)) {
+      return null;
+    }
+
     const loan = await Loan.findById(loanId)
       .populate("userId")
       .populate("bookId");
@@ -87,18 +99,34 @@ export class LoanService {
   }
 
   async getLoanByUser(userId: string): Promise<ILoan | null> {
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return null;
+    }
+
     return await Loan.findOne({ userId });
   }
 
   async getLoansByUser(userId: string): Promise<ILoan[] | null> {
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return null;
+    }
+
     return await Loan.find({ userId });
   }
 
   async getLoanByBook(bookId: string): Promise<ILoan | null> {
+    if (!mongoose.Types.ObjectId.isValid(bookId)) {
+      return null;
+    }
+
     return await Loan.findOne({ bookId });
   }
 
   async getLoansNameByUser(userId: string): Promise<string[]> {
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return [];
+    }
+
     const allLoans = await this.getLoansByUser(userId);
     if (!allLoans) return [];
 
@@ -116,7 +144,11 @@ export class LoanService {
     return bookTitles.filter((title): title is string => title !== null);
   }
 
-  async returnBook(loanId: string): Promise<ILoan> {
+  async returnBook(loanId: string): Promise<ILoan | null> {
+    if (!mongoose.Types.ObjectId.isValid(loanId)) {
+      return null;
+    }
+
     const loan = await Loan.findById(loanId)
       .populate("userId")
       .populate("bookId");

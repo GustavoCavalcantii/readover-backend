@@ -1,4 +1,4 @@
-import { isValidObjectId } from "mongoose";
+import mongoose, { isValidObjectId } from "mongoose";
 import { BookDTO } from "../dtos/BookDTO";
 import { IBook } from "../interfaces/IBook";
 import Book from "../models/Book";
@@ -49,6 +49,10 @@ export class BookService {
   }
 
   async getBookById(id: string): Promise<IBook | null> {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return null;
+    }
+
     const book = await Book.findById(id);
     return book;
   }
@@ -104,12 +108,12 @@ export class BookService {
 
   async updateBook(id: string, bookData: BookDTO): Promise<IBook | null> {
     if (!ObjectId.isValid(id)) {
-      throw new Error("ID inválido.");
+      return null;
     }
 
     const existingBook = await Book.findById(id);
     if (!existingBook) {
-      throw new Error("Livro não encontrado.");
+      return null;
     }
 
     const allowedFields = [

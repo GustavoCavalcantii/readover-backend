@@ -12,6 +12,13 @@ class BookController {
     try {
       const createBookDto = plainToInstance(BookDTO, req.body);
 
+      const alredyExists = await BookService.getBookByIsbn(createBookDto.isbn);
+
+      if (alredyExists) {
+        res.status(400).json(ErrorResponse("Este livro já foi cadastrado", 400));
+        return;
+      }
+
       const book = await BookService.createBook(createBookDto);
 
       const response = {
@@ -25,7 +32,7 @@ class BookController {
         .json(SuccessResponse(response, "Livro criado com sucesso!", 201));
     } catch (error) {
       logger.error("Erro ao criar livro", error);
-      res.status(400).json(ErrorResponse("Erro ao criar livro", 400));
+      res.status(500).json(ErrorResponse("Erro ao criar livro", 500));
     }
   }
 

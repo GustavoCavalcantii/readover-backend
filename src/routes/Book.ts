@@ -1,12 +1,10 @@
 import { Router } from "express";
-import VerifyToken from "../middlewares/Auth";
 import JsonRequiredMiddleware from "../middlewares/JsonRequired";
 import { ValidateRequest } from "../middlewares/ValidateRequest";
 import imageBookUpload from "../config/MulterBook";
 import BookController from "../controllers/BookController";
 import { BookDTO } from "../dtos/BookDTO";
-import { ValidateRoles } from "../middlewares/Roles";
-import { Roles } from "../enums/User/UserRole";
+
 
 const router = Router();
 
