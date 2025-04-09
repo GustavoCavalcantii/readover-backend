@@ -48,6 +48,15 @@ export class BookService {
     return book;
   }
 
+  async getBookByUser(userId: string): Promise<IBook[] | null> {
+    if (!ObjectId.isValid(userId)) {
+      throw new Error("ID inválido.");
+    }
+
+    const book = await Book.find({ userId });
+    return book;
+  }
+
   async getBookById(id: string): Promise<IBook | null> {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return null;
@@ -57,23 +66,27 @@ export class BookService {
     return book;
   }
 
-  async getAllBooks(
-    filter: string,
-    isCategory: boolean = false
-  ): Promise<IBook[]> {
-    if (!filter) {
+  async getAllBooks(filter?: string, category?: string): Promise<IBook[]> {
+    const query: any = {};
+
+    console.log(filter);
+    console.log(category);
+
+    if (filter) {
+      const regex = new RegExp(filter, "i");
+      query.$or = [{ author: regex }, { title: regex }];
+    }
+
+    if (category) {
+      const regex = new RegExp(category, "i");
+      query.category = { $regex: regex };
+    }
+
+    if (category?.toLowerCase() === "all") {
       return await Book.find();
     }
 
-    const regex = new RegExp(filter, "i");
-
-    if (!isCategory) {
-      return await Book.find({
-        $or: [{ author: regex }, { title: regex }],
-      });
-    }
-
-    return await Book.find({ category: filter });
+    return await Book.find(query);
   }
 
   async setImageOfBook(id: string, image: string): Promise<IBook | null> {
@@ -85,7 +98,7 @@ export class BookService {
     if (!existingBook) {
       throw new Error("Livro não encontrado.");
     }
-  
+
     if (existingBook.profileImage === image) {
       throw new Error("A nova imagem é igual à atual.");
     }
@@ -102,7 +115,7 @@ export class BookService {
   async getImageOfBook(id: string): Promise<string | null> {
     const book = await Book.findById(id);
     if (!book) throw new Error("Livro não encontrado.");
-  
+
     return book.profileImage || null;
   }
 

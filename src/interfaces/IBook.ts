@@ -7,7 +7,7 @@ export interface IBook extends Document {
     isbn: string;
     quantityAvailable: number;
     description: string;
-    category: string;
+    category: string[];
     linkPdf: string;
     profileImage: string;
     quantityLoaned: number;

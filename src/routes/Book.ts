@@ -8,13 +8,9 @@ import { BookDTO } from "../dtos/BookDTO";
 
 const router = Router();
 
-router.get("/filtrar", (req, res) => BookController.getAll(req, res));
+router.get("/filtrar", BookController.getAll);
 
-router.get("/filtrar/:filter", (req, res) => BookController.getAll(req, res));
-
-router.get("/categoria/:filter", (req, res) =>
-  BookController.getAll(req, res, true)
-);
+router.get("/categorias", BookController.getAllCategory);
 
 router.post(
   "/",

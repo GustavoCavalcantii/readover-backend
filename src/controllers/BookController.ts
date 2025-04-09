@@ -15,7 +15,9 @@ class BookController {
       const alredyExists = await BookService.getBookByIsbn(createBookDto.isbn);
 
       if (alredyExists) {
-        res.status(400).json(ErrorResponse("Este livro já foi cadastrado", 400));
+        res
+          .status(400)
+          .json(ErrorResponse("Este livro já foi cadastrado", 400));
         return;
       }
 
@@ -66,23 +68,20 @@ class BookController {
     }
   }
 
-  static async getAll(
-    req: Request,
-    res: Response,
-    isCategory: boolean = false
-  ) {
+  static async getAll(req: Request, res: Response) {
     try {
-      let { filter } = req.params;
+      let { filter, category } = req.query;
 
-      if (!filter) {
-        res.status(400).json(ErrorResponse("Filtro inválido", 400));
-        return;
-      }
+      if (typeof filter !== "string") filter = undefined;
+      if (typeof category !== "string") category = undefined;
 
-      const books = await BookService.getAllBooks(filter, isCategory);
+      if (filter) filter = decodeURIComponent(filter);
+      if (category) category = decodeURIComponent(category);
+
+      const books = await BookService.getAllBooks(filter, category);
 
       if (!books || books.length === 0) {
-        res.status(404).json(ErrorResponse("Nenhum livro encontrado", 404));
+        res.status(400).json(ErrorResponse("Nenhum livro encontrado", 400));
         return;
       }
 
@@ -105,6 +104,30 @@ class BookController {
       res.status(500).json(ErrorResponse("Erro ao listar livros", 500));
     }
   }
+
+  static async getAllCategory(req: Request, res: Response) {
+    try {
+      const books = await BookService.getAllBooks("", "");
+
+      if (!books || books.length === 0) {
+        res.status(404).json(ErrorResponse("Nenhum livro encontrado", 404));
+        return;
+      }
+
+      const categories = [
+        ...new Set(books.map((book) => book.category).flat()),
+      ];
+
+      res
+        .status(200)
+        .json(SuccessResponse(categories, "Lista de categorias", 200));
+    } catch (error) {
+      logger.error("Erro ao listar categorias", error);
+
+      res.status(500).json(ErrorResponse("Erro ao listar categorias", 500));
+    }
+  }
+
   static async update(req: Request, res: Response) {
     try {
       const idBook = req.params.id;
