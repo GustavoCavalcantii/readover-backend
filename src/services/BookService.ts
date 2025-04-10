@@ -90,26 +90,31 @@ export class BookService {
   }
 
   async setImageOfBook(id: string, image: string): Promise<IBook | null> {
-    if (!ObjectId.isValid(id)) {
-      throw new Error("ID inválido.");
+    try {
+      if (!ObjectId.isValid(id)) {
+        throw new Error("ID inválido.");
+      }
+
+      const existingBook = await Book.findById(id);
+      if (!existingBook) {
+        throw new Error("Livro não encontrado.");
+      }
+
+      if (existingBook.profileImage === image) {
+        throw new Error("A nova imagem é igual à atual.");
+      }
+
+      const updatedBook = await Book.findByIdAndUpdate(
+        id,
+        { profileImage: image },
+        { new: true }
+      );
+
+      return updatedBook;
+    } catch (error) {
+      console.error(error);
+      throw error;
     }
-
-    const existingBook = await Book.findById(id);
-    if (!existingBook) {
-      throw new Error("Livro não encontrado.");
-    }
-
-    if (existingBook.profileImage === image) {
-      throw new Error("A nova imagem é igual à atual.");
-    }
-
-    const updatedBook = await Book.findByIdAndUpdate(
-      id,
-      { image },
-      { new: true }
-    );
-
-    return updatedBook;
   }
 
   async getImageOfBook(id: string): Promise<string | null> {
@@ -158,6 +163,13 @@ export class BookService {
 
     if (isDataEqual) {
       throw new Error("Nenhuma alteração detectada. Os dados são iguais.");
+    }
+
+    if (filteredBookData.quantityAvailable !== undefined) {
+      filteredBookData.quantityAvailable = Math.max(
+        0,
+        filteredBookData.quantityAvailable
+      );
     }
 
     const updatedBook = await Book.findByIdAndUpdate(id, filteredBookData, {

@@ -25,11 +25,11 @@ const imageBookUpload = multer({
       callback(null, uploadPath);
     },
     filename: (req, file, callback) => {
-      const bookId = "chaveUnica"; // TODO: Consultar no banco uma chave única
-
       const ext = file.originalname.split(".").pop();
       const uniqueId = uuidv4();
       const safeFilename = `${uniqueId}.${ext}`;
+
+      req.newFilename = safeFilename;
 
       callback(null, safeFilename);
     },

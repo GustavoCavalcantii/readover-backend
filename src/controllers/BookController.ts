@@ -6,6 +6,8 @@ import { BookDTO } from "../dtos/BookDTO";
 import BookService from "../services/BookService";
 import logger from "../config/Logger";
 import path from "path";
+import ImageService from "../services/ImageService";
+import { ImageTypes } from "../enums/Image/ImageTypes";
 
 class BookController {
   static async create(req: Request, res: Response) {
@@ -193,10 +195,15 @@ class BookController {
 
     const { id } = req.params;
 
-    const imagePath = path.resolve(req.file.path);
+    const imageName = req.newFilename;
+
+    if (!imageName) {
+      res.status(500).json(ErrorResponse("Não foi possível salvar o arquivo", 500));
+      return;
+    }
 
     try {
-      await BookService.setImageOfBook(id, imagePath);
+      await BookService.setImageOfBook(id, imageName);
 
       res
         .status(200)
@@ -212,14 +219,18 @@ class BookController {
   static async getBookImage(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const imageUrl = await BookService.getImageOfBook(id);
 
-      if (!imageUrl) {
+      const route = await ImageService.getImage(
+        id,
+        ImageTypes.BOOK
+      );
+
+      if (!route) {
         res.status(404).json(ErrorResponse("Imagem não encontrada", 404));
         return;
       }
 
-      res.status(200).sendFile(imageUrl);
+      res.status(200).sendFile(route);
     } catch (error) {
       logger.error("Erro ao obter imagem do livro:", error);
 
