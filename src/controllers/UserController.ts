@@ -64,6 +64,7 @@ class UserController {
         id: user.id,
         username: user.username,
         email: user.email,
+        role: user.accessLevel,
       };
 
       res
@@ -99,6 +100,7 @@ class UserController {
         id: updatedUser.id,
         username: updatedUser.username,
         email: updatedUser.email,
+        role: updatedUser.accessLevel
       };
 
       res

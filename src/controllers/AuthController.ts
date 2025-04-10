@@ -11,8 +11,6 @@ import { EmailService } from "../services/EmailService";
 import { ResetToken } from "../models/ResetToken";
 import { ResetTypes } from "../enums/User/ResetTypes";
 
-const SECRET_KEY = process.env.JWT_SECRET as string;
-
 class AuthController {
   static async login(req: Request, res: Response) {
     const userDto = plainToClass(UserDTO, req.body);
@@ -45,6 +43,7 @@ class AuthController {
       username: user.username,
       email: user.email,
       token: accessToken,
+      role: user.accessLevel
     };
 
     res
@@ -67,7 +66,7 @@ class AuthController {
         return;
       }
 
-      const user = await userService.getUserById(storedToken.userId);
+      const user = await userService.getUserById(storedToken.userId.toString());
       if (!user) {
         res.status(401).json(ErrorResponse("Usuário não encontrado", 401));
         return;
@@ -91,6 +90,7 @@ class AuthController {
         username: user.username,
         email: user.email,
         token: accessToken,
+        role: user.accessLevel,
       };
 
       AuthService.deleteRefreshToken(storedToken.token);
@@ -133,7 +133,7 @@ class AuthController {
         return;
       }
 
-      const user = await userService.getUserById(storedToken.userId);
+      const user = await userService.getUserById(storedToken.userId.toString());
 
       if (!user || user.deleted) {
         res.status(400).json(ErrorResponse("Usuário não encontrado", 400));
@@ -188,6 +188,7 @@ class AuthController {
         id: updateUser.id,
         username: updateUser.username,
         email: updateUser.email,
+        role: user.accessLevel
       };
 
       res

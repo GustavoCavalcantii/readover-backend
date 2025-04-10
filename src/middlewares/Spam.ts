@@ -4,7 +4,7 @@ import { ErrorResponse } from "../@types/Responses/ErrorResponse";
 
 export const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100,
+  max: 1000,
   message: "Muitas requisições! Tente novamente mais tarde.",
   standardHeaders: true,
   legacyHeaders: false,

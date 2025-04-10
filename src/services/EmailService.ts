@@ -48,7 +48,7 @@ export class EmailService {
         const subject = "Redefinição de senha - Readover";
         const text = `Olá ${name}, aqui está o link para redefinir sua senha: ${link}`;
         const html = 
-         `<p>Olá <strong>${name}</strong>,</p>
+         `<p><strong>${name}</strong>,</p>
           <p>Clique no link abaixo para redefinir sua senha:</p>
           <a href="${link}">${link}</a>
           <p>Se você não solicitou isso, ignore este e-mail.</p>`;
