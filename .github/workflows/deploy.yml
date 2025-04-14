@@ -2,7 +2,7 @@ name: "Deploy para a VPS"
 on:
   push:
     branches:
-      -main
+      - main 
 
 jobs: 
   build_deploy:
@@ -12,14 +12,11 @@ jobs:
       - name: "Baixar o código"
         uses: actions/checkout@v4
 
-      _ name: "Copiar arquivo para VPS"
+      - name: "Copiar arquivo para VPS"
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "."
-          target: ${{ secrets.API_READOVER_TARGET}}
-        
-
-    
+          target: ${{ secrets.API_READOVER_TARGET }} 
