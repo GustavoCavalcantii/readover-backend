@@ -17,10 +17,23 @@ jobs:
         uses: easingthemes/ssh-deploy@main
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          ARGS: "-rltgoDzv0 --delete"
-          SOURCE: "src/"
+          ARGS: "-rltgoDzv0 --exclude='.env'"
+          SOURCE: "."
           REMOTE_HOST: ${{ secrets.HOST }}
           REMOTE_USER: ${{ secrets.USERNAME }}
           TARGET: ${{ secrets.API_READOVER_TARGET }}
- 
-          
+
+      - name: "Build e permissões"
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} ${{ secrets.USERNAME }}@${{ secrets.HOST }} << EOF
+            export API_READOVER_TARGET="${{ secrets.API_READOVER_TARGET }}"
+            
+            cd "$API_READOVER_TARGET/../"
+
+            sudo chown -R lsadm:lsadm $API_READOVER_TARGET
+            sudo find $API_READOVER_TARGET -type d -exec chmod 755 {} \;
+            sudo find $API_READOVER_TARGET -type f -exec chmod 644 {} \;
+            
+            npm install
+            npm run prod
+          EOF
