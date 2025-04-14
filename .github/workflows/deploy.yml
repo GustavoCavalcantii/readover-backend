@@ -14,10 +14,13 @@ jobs:
         uses: actions/checkout@v4
 
       - name: "Copiar arquivos para a VPS"
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "."
-          target: ${{ secrets.API_READOVER_TARGET }}
+        uses: easingthemes/ssh-deploy@main
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          ARGS "-rltgoDzv0 --delete"
+          SOURCE: "src/"
+          REMOTE_HOST: ${{ secrets.HOST }}
+          REMOTE_USER: ${{ secrets.USERNAME }}
+          TARGET: ${{ secrets.API_READOVER_TARGET }}
+ 
+          
