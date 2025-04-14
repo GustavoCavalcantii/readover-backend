@@ -13,16 +13,11 @@ jobs:
       - name: "Baixar o código"
         uses: actions/checkout@v4
 
-      - name: "Copiar arquivo para VPS"
-        uses: appleboy/scp-action@v0.1.7
+      - name: "Copiar arquivos para a VPS"
+        uses: appleboy/scp-action@v0.1.17
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "."
           target: ${{ secrets.API_READOVER_TARGET }}
-          strip_components: 0
-          debug: true
-          use_insecure_cipher: true
-        env:
-          TERM: xterm
