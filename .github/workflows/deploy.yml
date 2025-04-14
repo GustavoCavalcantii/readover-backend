@@ -23,13 +23,14 @@ jobs:
           REMOTE_USER: ${{ secrets.USERNAME }}
           TARGET: ${{ secrets.API_READOVER_TARGET }}
 
-      - name: "Build e permissões"
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Deploy via SSH
         run: |
-          ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} ${{ secrets.USERNAME }}@${{ secrets.HOST }} << EOF
-            set -e
-            
-            echo "API_READOVER_TARGET is $API_READOVER_TARGET"
-            
+          ssh -o StrictHostKeyChecking=no ${{ secrets.USERNAME }}@${{ secrets.HOST }} << EOF
             cd "$API_READOVER_TARGET/../"
             
             sudo chown -R lsadm:lsadm $API_READOVER_TARGET
