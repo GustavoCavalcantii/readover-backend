@@ -32,11 +32,6 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.USERNAME }}@${{ secrets.HOST }} << EOF
             cd "$API_READOVER_TARGET/../"
-            
-            sudo chown -R lsadm:lsadm $API_READOVER_TARGET
-            sudo find $API_READOVER_TARGET -type d -exec chmod 755 {} \;
-            sudo find $API_READOVER_TARGET -type f -exec chmod 644 {} \;
-            
             npm install
             npm run prod
           EOF
