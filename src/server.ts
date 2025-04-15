@@ -12,7 +12,7 @@ const API_NAME: string = packageJson.name;
 const APP_VERSION: string = packageJson.version;
 const API_VERSION: string = "v" + (process.env.API_VERSION || "1"); 
 const ENVIRONMENT: string = process.env.ENVIRONMENT === "dev" ? ApiEnviroment.DEV : ApiEnviroment.PROD; 
-const PORT: number = Number(process.env.PORT) || 8088;
+const PORT: number = Number(process.env.PORT) || 3000;
 
 const stopServer = async () => {
   logger.warn("Parando a aplicação...");

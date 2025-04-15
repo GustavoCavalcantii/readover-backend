@@ -27,14 +27,3 @@ jobs:
         uses: webfactory/ssh-agent@v0.5.3
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          
-      - name: "Build do projeto"
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.USERNAME }}@${{ secrets.HOST }} << EOF
-            export API_READOVER_TARGET="${{ secrets.API_READOVER_TARGET }}"
-            
-            cd "\$API_READOVER_TARGET/../"
-            
-            npm install
-            npm run prod
-          EOF

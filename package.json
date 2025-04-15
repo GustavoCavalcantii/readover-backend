@@ -3,8 +3,7 @@
   "description": "",
   "version": "1.16.2",
   "scripts": {
-    "dev": "tsx watch src/server.ts"
-    "prod": "tsx watch src/server.ts"
+    "start": "tsx watch src/server.ts"
   },
   "dependencies": {
     "@types/multer": "^1.4.12",

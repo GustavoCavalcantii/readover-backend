@@ -4,7 +4,7 @@ import { config } from "dotenv";
 import Logger from "../config/Logger";
 config();
 
-const MONGO_URI = process.env.MONGO_URI as string;
+const MONGO_URI = process.env.MONGO_URI || "mongodb://mongo:27017/readover-db";
 
 if(!MONGO_URI){
     throw new Error("MONGO_URI não está definido no .env");
