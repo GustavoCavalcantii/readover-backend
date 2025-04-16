@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps: 
-      - name: "Baixar o código"
+      - name: "📤 Baixar o código"
         uses: actions/checkout@v4
 
-      - name: "Copiar arquivos para a VPS"
+      - name: "📤 Copiar arquivos para a VPS"
         uses: easingthemes/ssh-deploy@main
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
@@ -22,8 +22,14 @@ jobs:
           REMOTE_HOST: ${{ secrets.HOST }}
           REMOTE_USER: ${{ secrets.USERNAME }}
           TARGET: ${{ secrets.API_READOVER_TARGET }}
-          
-      - name: "Adicionando chave SSH"
-        uses: webfactory/ssh-agent@v0.5.3
+      - name: "🐳 Recarregar containers Docker"
+        uses: appleboy/ssh-action@v1.0.0
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22 
+          script: |
+            cd ${{ secrets.API_READOVER_TARGET }}
+            docker compose down
+            docker compose up -d --build
