@@ -27,6 +27,7 @@ const allowedOrigins = ["http://localhost:5173", "http://localhost:5174"];
 */
 app.use(limiter);
 app.use(cookieParser());
+app.set("trust proxy", true);
 app.use(express.json());
 app.use(
   cors({
