@@ -20,9 +20,7 @@ import { NotFoundMiddleware } from "./middlewares/NotFound";
 
 const app = express();
 
-const allowedOrigins = [
-  "*"
-];
+const allowedOrigins = ["http://localhost:5173", "http://localhost:5174"];
 
 /*
   MIDDLEWARES
