@@ -20,12 +20,28 @@ import { NotFoundMiddleware } from "./middlewares/NotFound";
 
 const app = express();
 
+const allowedOrigins = [
+  "*"
+];
+
 /*
   MIDDLEWARES
 */
 app.use(limiter);
 app.use(cookieParser());
 app.use(express.json());
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
 app.use(morgan("dev"));
 
 app.use(MaintenanceMiddleware);
