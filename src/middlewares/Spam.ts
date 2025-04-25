@@ -8,6 +8,12 @@ export const limiter = rateLimit({
   message: "Muitas requisições! Tente novamente mais tarde.",
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator: (req: Request): string => {
+    const ip = req.headers["x-forwarded-for"];
+    if (typeof ip === "string") return ip;
+    if (Array.isArray(ip)) return ip[0];
+    return req.socket.remoteAddress || "unknown";
+  },
   handler: (req: Request, res: Response, next: NextFunction) => {
     res
       .status(429)
