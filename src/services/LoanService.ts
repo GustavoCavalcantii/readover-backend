@@ -72,7 +72,7 @@ export class LoanService {
     loan.actualReturnDate = undefined;
   
     const book = loan.bookId as any;
-    book.quantityLoaned += 1;
+    book.quantityLoaned = (book.quantityLoaned || 0) + 1;
     await book.save();
     await loan.save();
   
