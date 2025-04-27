@@ -63,40 +63,31 @@ export class LoanService {
     const loan = await Loan.findById(loanId)
       .populate("userId", "username email profileImage")
       .populate("bookId", "title author isbn quantityAvailable category");
-
+  
     if (!loan) throw new Error("Empréstimo não encontrado.");
-
+  
     loan.status = BookStatus.ACTIVE;
     loan.loanDate = new Date();
     loan.expectedReturnDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
     loan.actualReturnDate = undefined;
-
-    if (loan.bookId instanceof Book) {
-      loan.bookId.quantityLoaned += 1;
-      await loan.bookId.save();
-    } else {
-      const book = await Book.findById(loan.bookId);
-      if (book) {
-        book.quantityLoaned += 1;
-        await book.save();
-      }
-    }
-
-    await loan.save();
-
-    const user = loan.userId as any;
+  
     const book = loan.bookId as any;
-
+    book.quantityLoaned += 1;
+    await book.save();
+    await loan.save();
+  
+    const user = loan.userId as any;
+  
     // Notificar aprovação
     await NotificationService.notifyLoanApproved(
       user,
       book,
       loan.expectedReturnDate
     );
-
+  
     return loan;
   }
-
+  
   async rejectLoan(loanId: string): Promise<ILoan> {
     const loan = await Loan.findById(loanId)
       .populate("userId", "username email profileImage")
