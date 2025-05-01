@@ -49,7 +49,7 @@ export class BookDTO {
     groups: ["create", "update"],
     message: "A descrição deve ser uma string",
   })
-  @Length(1, 500, {
+  @Length(1, 5000, {
     message: "A descrição deve ter entre 1 e 500 caracteres.",
     groups: ["create", "update"],
   })
