@@ -27,6 +27,12 @@ router.put(
   LoanController.rejectLoan
 );
 
+router.get(
+  "/",
+  ValidateRoles(Roles.ADMIN),
+  LoanController.getAllLoans
+);
+
 router.put("/retornar/:id", LoanController.returnBook);
 
 router.get("/pendentes", LoanController.getPendingLoans);
