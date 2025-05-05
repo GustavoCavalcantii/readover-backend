@@ -9,56 +9,61 @@ import BookService from "./BookService";
 
 export class LoanService {
   async requestLoan(requestLoan: LoanDTO, userId: string): Promise<ILoan> {
-    const { bookId } = requestLoan;
+    const { bookId, returnInDays } = requestLoan;
 
     const book = await Book.findById(bookId);
     if (!book) {
       throw new Error("Livro não encontrado.");
+    }
+  
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error("Usuário não encontrado.");
+    }
+  
+    const existingLoan = await Loan.findOne({
+      userId,
+      bookId,
+      status: { $in: [BookStatus.ACTIVE, BookStatus.PENDING] },
+    });
+  
+    if (existingLoan) {
+      throw new Error("Você já possui um empréstimo ativo ou pendente para este livro.");
     }
 
     const activeLoans = await Loan.countDocuments({
       bookId,
       status: { $in: [BookStatus.ACTIVE, BookStatus.PENDING] },
     });
-
+  
     if (activeLoans >= book.quantityAvailable) {
-      throw new Error(
-        "Todas as cópias deste livro estão emprestadas ou com solicitação pendente."
-      );
+      throw new Error("Todas as cópias deste livro estão emprestadas ou com solicitação pendente.");
     }
 
-    const user = await User.findById(userId);
-    if (!user) {
-      throw new Error("Usuário não encontrado.");
-    }
+    const expectedReturnDate = new Date();
+    expectedReturnDate.setDate(expectedReturnDate.getDate() + returnInDays);
 
     const loan = new Loan({
       userId,
       bookId,
       status: BookStatus.PENDING,
       loanDate: new Date(),
-      expectedReturnDate: new Date(
-        `${requestLoan.expectedReturnDate}T00:00:00`
-      ),
+      expectedReturnDate,
       actualReturnDate: undefined,
     });
-
+  
     await loan.save();
-
+  
     const populatedLoan = await Loan.findById(loan._id)
       .populate("userId", "username email profileImage")
       .populate("bookId", "title author isbn quantityAvailable category");
 
-    // Notificar solicitação de empréstimo
-    await NotificationService.notifyLoanRequested(
-      user,
-      book,
-      loan.expectedReturnDate
-    );
-
+    await NotificationService.notifyLoanRequested(user, book, expectedReturnDate);
+  
     return populatedLoan as ILoan;
   }
-
+  
+  
   async getLoanById(loanId: string): Promise<ILoan | null> {
     return await Loan.findById(loanId)
       .populate("userId", "username email profileImage")
