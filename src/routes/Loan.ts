@@ -34,7 +34,7 @@ router.get(
 );
 
 router.get(
-  "/id/:id",
+  "/id/:loanId",
   ValidateRoles(Roles.ADMIN),
   LoanController.getLoanById
 );
