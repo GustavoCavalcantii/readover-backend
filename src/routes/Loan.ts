@@ -33,11 +33,17 @@ router.get(
   LoanController.getAllLoans
 );
 
+router.get(
+  "/id/:id",
+  ValidateRoles(Roles.ADMIN),
+  LoanController.getLoanById
+);
+
 router.put("/retornar/:id", LoanController.returnBook);
 
 router.get("/pendentes", LoanController.getPendingLoans);
 
-router.get("/meus-emprestimos", LoanController.getAllLoans);
+router.get("/meus-emprestimos", LoanController.getLoansByLoggedUser);
 
 router.get("/usuario/:userId", LoanController.getLoanByUser);
 

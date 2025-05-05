@@ -53,24 +53,59 @@ class LoanController {
     }
   }
 
-  async getAllLoans(req: Request, res: Response) {
+  async getLoanById(req: Request, res: Response): Promise<void> {
     try {
-      const loggedInUser = req.user as IUser;
-      if (!loggedInUser) {
-        res.status(401).json(ErrorResponse("Usuário não autenticado.", 401));
+      const { loanId } = req.params;
+      const loan = await LoanService.getLoanById(loanId);
+  
+      if (!loan) {
+        res
+          .status(404)
+          .json(ErrorResponse("Empréstimo não encontrado", 404));
         return;
       }
+  
+      const response = {
+        user: {
+          id: (loan.userId as any)?._id,
+          email: (loan.userId as any)?.email,
+          username: (loan.userId as any)?.username,
+        },
+        book: {
+          id: (loan.bookId as any)?._id,
+          title: (loan.bookId as any)?.title,
+          author: (loan.bookId as any)?.author,
+          isbn: (loan.bookId as any)?.isbn,
+        },
+        id: loan._id,
+        status: loan.status,
+        loanDate: loan.loanDate,
+        expectedReturnDate: loan.expectedReturnDate,
+        actualReturnDate: loan.actualReturnDate,
+      };
+  
+      res
+        .status(200)
+        .json(SuccessResponse(response, "Empréstimo encontrado!", 200));
+    } catch (error) {
+      logger.error("Erro ao buscar empréstimo por ID", error);
+      res
+        .status(500)
+        .json(ErrorResponse("Erro ao buscar empréstimo por ID", 500));
+    }
+  }
+  
 
-      const loans = await LoanService.getLoansByUser(loggedInUser.id);
-
-      if (!loans) {
+  async getAllLoans(req: Request, res: Response) {
+    try {
+      const loans = await LoanService.getAllLoans(); 
+  
+      if (!loans || loans.length === 0) { 
         res
           .status(200)
           .json(ErrorResponse("Nenhum empréstimo encontrado", 200));
-
-        return;
       }
-
+  
       const response = loans.map((loan) => ({
         user: {
           id: (loan.userId as any)?._id,
@@ -81,7 +116,7 @@ class LoanController {
           id: (loan.bookId as any)?._id,
           title: (loan.bookId as any)?.title,
           author: (loan.bookId as any)?.author,
-          isbn: (loan.bookId as any).isbn,
+          isbn: (loan.bookId as any)?.isbn,
         },
         id: loan._id,
         status: loan.status,
@@ -89,21 +124,18 @@ class LoanController {
         expectedReturnDate: loan.expectedReturnDate,
         actualReturnDate: loan.actualReturnDate,
       }));
-
-      res
-        .status(200)
-        .json(
-          SuccessResponse(
-            response,
-            "Empréstimos recuperados com sucesso!",
-            200
-          )
-        );
+  
+      res.status(200).json(
+        SuccessResponse(response, "Todos os empréstimos recuperados com sucesso!", 200)
+      );
     } catch (error) {
       logger.error("Erro ao buscar empréstimos", error);
-      res.status(500).json(ErrorResponse("Erro ao buscar empréstimos", 500));
+      res
+        .status(500)
+        .json(ErrorResponse("Erro ao buscar empréstimos", 500));
     }
   }
+  
 
   async approveLoan(req: Request, res: Response) {
     try {
@@ -268,6 +300,50 @@ class LoanController {
         .json(ErrorResponse("Erro ao buscar empréstimo por usuário", 400));
     }
   }
+
+  async getLoansByLoggedUser(req: Request, res: Response) {
+    try {
+      const loggedInUser = req.user as IUser;
+      if (!loggedInUser) {
+        res.status(401).json(ErrorResponse("Usuário não autenticado", 401));
+        return;
+      }
+  
+      const loans = await LoanService.getLoansByUser(loggedInUser.id);
+  
+      if (!loans || loans.length === 0) {
+        res
+          .status(404)
+          .json(ErrorResponse("Nenhum empréstimo encontrado para este usuário", 404));
+        return;
+      }
+  
+      const response = loans.map((loan) => ({
+        user: {
+          id: (loan.userId as any)._id,
+          email: (loan.userId as any).email,
+          username: (loan.userId as any).username,
+        },
+        book: {
+          id: (loan.bookId as any)._id,
+          title: (loan.bookId as any).title,
+          author: (loan.bookId as any).author,
+          isbn: (loan.bookId as any).isbn,
+        },
+        id: loan._id,
+        status: loan.status,
+        loanDate: loan.loanDate,
+        expectedReturnDate: loan.expectedReturnDate,
+        actualReturnDate: loan.actualReturnDate,
+      }));
+  
+      res.status(200).json(SuccessResponse(response, "Empréstimos encontrados!", 200));
+    } catch (error) {
+      logger.error("Erro ao buscar empréstimos do usuário logado", error);
+      res.status(400).json(ErrorResponse("Erro ao buscar empréstimos do usuário logado", 400));
+    }
+  }
+  
 
   async getLoanByBook(req: Request, res: Response) {
     try {
