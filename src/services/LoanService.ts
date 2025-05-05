@@ -59,6 +59,13 @@ export class LoanService {
     return populatedLoan as ILoan;
   }
 
+  async getLoanById(loanId: string): Promise<ILoan | null> {
+    return await Loan.findById(loanId)
+      .populate("userId", "username email profileImage")
+      .populate("bookId", "title author isbn quantityAvailable category");
+  }
+  
+
   async approveLoan(loanId: string): Promise<ILoan> {
     const loan = await Loan.findById(loanId)
       .populate("userId", "username email profileImage")
@@ -149,6 +156,13 @@ export class LoanService {
       .populate("userId", "username email profileImage")
       .populate("bookId", "title author isbn quantityAvailable category");
   }
+
+  async getAllLoans(): Promise<ILoan[]> {
+    return await Loan.find()
+      .populate("userId", "username email profileImage")
+      .populate("bookId", "title author isbn quantityAvailable category");
+  }
+
 
   async returnBook(loanId: string): Promise<ILoan> {
     const loan = await Loan.findById(loanId)

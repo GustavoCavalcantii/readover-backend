@@ -1,7 +1,7 @@
 {
   "name": "readover",
   "description": "",
-  "version": "1.16.3",
+  "version": "1.18.1",
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "start": "tsx src/server.ts"
