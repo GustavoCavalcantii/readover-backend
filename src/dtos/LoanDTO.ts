@@ -1,17 +1,16 @@
-import { IsEnum, IsDate, IsOptional, IsDateString } from "class-validator";
+import { IsEnum, IsDate, IsOptional, IsDateString, IsIn, IsInt } from "class-validator";
 import { BookStatus } from "../enums/Book/BookStatus";
 
 export class LoanDTO {
+  id: string;
+  bookId: string;
 
-   id: string;
-   bookId: string;
-
-   @IsOptional({ groups: ["create"] }) 
-   @IsEnum(BookStatus, {
-     message: "Status inválido. Valores aceitos: ativo, devolvido, atrasado, pendente, rejeitado.",
-     groups: ["update"],
-   })
-   status?: BookStatus;
+  @IsOptional({ groups: ["create"] })
+  @IsEnum(BookStatus, {
+    message: "Status inválido. Valores aceitos: ativo, devolvido, atrasado, pendente, rejeitado.",
+    groups: ["update"],
+  })
+  status?: BookStatus;
 
   @IsOptional({ groups: ["create", "update"] })
   @IsDate({
@@ -23,14 +22,20 @@ export class LoanDTO {
   @IsOptional({ groups: ["update"] })
   @IsDateString({}, {
     message: "A data de devolução esperada deve estar no formato YYYY-MM-DD.",
-    groups: ["create", "update"],
+    groups: ["update"],
   })
-  expectedReturnDate: string;
+  expectedReturnDate?: string;
 
   @IsOptional({ groups: ["update"] })
   @IsDateString({}, {
-    message: "A data de devolução esperada deve estar no formato YYYY-MM-DD.",
+    message: "A data de devolução deve estar no formato YYYY-MM-DD.",
     groups: ["create", "update"],
   })
   actualReturnDate?: Date;
+
+  @IsIn([7, 15, 30], {
+    message: "Número de dias de empréstimo deve ser 7, 15 ou 30.",
+    groups: ["create"]
+  })
+  returnInDays: number;
 }
