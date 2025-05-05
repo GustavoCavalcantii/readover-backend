@@ -39,7 +39,7 @@ router.get(
   LoanController.getLoanById
 );
 
-router.put("/retornar/:id", LoanController.returnBook);
+router.put("/retornar/:id", ValidateRoles(Roles.ADMIN), LoanController.returnBook);
 
 router.get("/pendentes", LoanController.getPendingLoans);
 
