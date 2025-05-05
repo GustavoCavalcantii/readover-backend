@@ -66,7 +66,7 @@ class LoanController {
       if (!loans) {
         res
           .status(200)
-          .json(ErrorResponse("Nenhum empréstimo pendente encontrado", 200));
+          .json(ErrorResponse("Nenhum empréstimo encontrado", 200));
 
         return;
       }
@@ -95,7 +95,7 @@ class LoanController {
         .json(
           SuccessResponse(
             response,
-            "Empréstimos pendentes recuperados com sucesso!",
+            "Empréstimos recuperados com sucesso!",
             200
           )
         );
