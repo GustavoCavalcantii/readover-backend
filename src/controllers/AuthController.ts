@@ -43,7 +43,7 @@ class AuthController {
       username: user.username,
       email: user.email,
       token: accessToken,
-      role: user.accessLevel
+      role: user.accessLevel,
     };
 
     res
@@ -188,7 +188,7 @@ class AuthController {
         id: updateUser.id,
         username: updateUser.username,
         email: updateUser.email,
-        role: user.accessLevel
+        role: user.accessLevel,
       };
 
       res
@@ -224,11 +224,21 @@ class AuthController {
         type
       );
 
-      const link = `https://readover.techgonz.com.br/redefinir-senha?token=${token}`;
+      if (type === ResetTypes.PASSWORD) {
+        const link = `https://readover.techgonz.com.br/auth/reset-pass?token=${token}`;
+        await EmailService.sendPasswordResetEmail(
+          user.email,
+          user.username,
+          link
+        );
+      }
 
-      // TODO: Implementar envio de e-mail com o link
-      await EmailService.sendPasswordResetEmail(user.email, user.username, link);
-
+        const link = `https://readover.techgonz.com.br/auth/email/reset?token=${token}`;
+        await EmailService.sendEmailResetEmail(
+          user.email,
+          user.username,
+          link
+        );
 
       res
         .status(200)
