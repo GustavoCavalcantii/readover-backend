@@ -8,8 +8,13 @@ export function ErrorMiddleware(
   res: Response,
   next: NextFunction
 ) {
-  logger.error(err);
+  if (err instanceof Error) {
+    logger.error(`Erro: ${err.message}\nStack Trace: ${err.stack}`);
+  }
 
+  if (!(err instanceof Error)) {
+    logger.error("Erro desconhecido: ", err);
+  }
   const responseBody = ErrorResponse("Erro interno do servidor", 500);
 
   res.status(500).json(responseBody);

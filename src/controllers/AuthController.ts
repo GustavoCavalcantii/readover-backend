@@ -60,6 +60,7 @@ class AuthController {
 
     try {
       const storedToken = await RefreshToken.findOne({ token: refreshToken });
+      console.log("storedToken:", storedToken);
 
       if (!storedToken || storedToken.expiresAt < new Date()) {
         res.status(401).json(ErrorResponse("Token inválido", 401));

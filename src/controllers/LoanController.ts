@@ -55,9 +55,9 @@ class LoanController {
 
   async getLoanById(req: Request, res: Response): Promise<void> {
     try {
-      const { id } = req.params;
-      const loan = await LoanService.getLoanById(id);
-  
+      const { loanId } = req.params;
+      const loan = await LoanService.getLoanById(loanId);
+
       if (!loan) {
         res
           .status(404)
